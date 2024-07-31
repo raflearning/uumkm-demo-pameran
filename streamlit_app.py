@@ -153,3 +153,17 @@ if data is not None and selected_sheet:
             # Display interpretation
             st.write("### 📊Insight dari Bisnis Kamu!")
             st.write(interpretation)
+
+            # Chatbot section
+            st.write("### 💬 Chatbot Gemini")
+            st.write("Silakan ajukan pertanyaan terkait visualisasi di atas, dan Gemini akan menjawab berdasarkan data yang ada.")
+            
+            # Input box for user questions
+            user_question = st.text_input("Ajukan pertanyaan kamu di sini:")
+
+            if user_question:
+                response = model.generate_content(f"Pertanyaan: {user_question}\nData: {interpretation}")
+                st.write("#### Jawaban Chatbot:")
+                st.write(response.text)
+
+# End of Streamlit app
