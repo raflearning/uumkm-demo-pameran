@@ -169,7 +169,17 @@ user_question = st.text_input("Ajukan pertanyaan kamu di sini:")
 
 if user_question:
     model = genai.GenerativeModel(model_name='gemini-1.5-pro-latest')  # Initialize Gemini Model
-    response = model.generate_content(f"Pertanyaan: {user_question}\nData: {interpretation}")
+    general_chatbot_prompt = (
+        f"""
+        Kamu adalah seorang data analyst dan business intelligence handal dan profesional. Tugas kamu adalah menjawab pertanyaan dari user terkait hasil interpretasi pada. Gunakan bahasa yang lumayan santai, mudah dipahami, beginner hingga expert friendly, dan tetap bercirikhas bisnis.
+        Interpretasikan secara spesifik dan mendalam dalam konteks bisnis yang sesuai dan memberikan rekomendasi yang dapat membangun bisnis untuk ke depannya.
+        Perhatikan chart dengan detail, jelaskan data-datanya, dan sampaikan semua informasi yang bermanfaat kepada pelaku UMKM.
+        Tekankan kalimat atau kata yang penting dengan bold/underline/italic. Buatkan poin-poin atau tabel jika perlu.
+        Berikan judul yang sesuai dengan topik dan juga 1 emoji di depan judul yang sesuai dengan yang Kamu interpretasikan supaya user UMKM paham akan data yang dibahas.
+        """
+    )
+    response = model.generate_content(f"Prompt: {general_chatbot_prompt}\nPertanyaan: {user_question}\nData: {interpretation}")
+
     chatbot_response = response.text
 
     # Display the response as typing effect
