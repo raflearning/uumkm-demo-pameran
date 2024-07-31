@@ -113,16 +113,17 @@ if data is not None and selected_sheet:
     selected_business_info = st.selectbox("", business_options)
 
     if selected_business_info:
-        # Reset charts and interpretation when new business info is selected
+        # Reset visualization and interpretation state when new business info is selected
         if 'last_selected_business_info' not in st.session_state:
             st.session_state['last_selected_business_info'] = ""
         
         if st.session_state['last_selected_business_info'] != selected_business_info:
             st.session_state['charts'] = []
             st.session_state['interpretation_text'] = ""
+            st.session_state['visualization_done'] = False
             st.session_state['last_selected_business_info'] = selected_business_info
 
-        if not st.session_state['charts'] and not st.session_state['interpretation_text']:
+        if not st.session_state['visualization_done']:
             # Call appropriate visualization function based on the selected sheet
             if selected_sheet == 'Pelanggan':
                 charts, interpretation = visualize_pelanggan(sheet_data, selected_business_info, model)
@@ -149,17 +150,21 @@ if data is not None and selected_sheet:
             st.session_state['interpretation_text'] = interpretation
             st.session_state['charts'] = charts
 
-        # Display all the relevant charts first
-        if st.session_state['charts']:
-            for chart in st.session_state['charts']:
+            # Display all the relevant charts first, one by one
+            for i, chart in enumerate(st.session_state['charts']):
                 figure = chart.get('figure')
                 try:
                     # Directly display the Plotly figure
                     st.plotly_chart(figure)
                 except Exception as e:
                     st.write(f"### Error: Could not display Plotly figure. Error: {e}")
+                time.sleep(1)  # Jeda antar chart
 
-            # Display interpretation after the charts
+            # Mark visualization as done
+            st.session_state['visualization_done'] = True
+
+        if st.session_state['visualization_done']:
+            # Display interpretation after all charts are shown
             interpretation_text = st.session_state['interpretation_text']
             interpretation_box = st.empty()
             interpretation_box.markdown(interpretation_text)
