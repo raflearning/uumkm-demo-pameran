@@ -167,7 +167,7 @@ if data is not None and selected_sheet:
                 for i in range(len(interpretation)):
                     interpretation_text += interpretation[i]
                     interpretation_box.markdown(interpretation_text)
-                    time.sleep(0.01)  # Adjust the speed of typing effect
+                    time.sleep(0.005)  # Adjust the speed of typing effect
                 return interpretation_text
             return ""
 

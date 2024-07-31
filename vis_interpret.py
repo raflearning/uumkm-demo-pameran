@@ -20,8 +20,8 @@ def interpret_chart(sheet_name, charts, model):
         penjualan UMKM dari sheet {sheet_name}. Gunakan bahasa yang lumayan santai, mudah dipahami, beginner hingga expert friendly, dan tetap bercirikhas bisnis.
         Interpretasikan secara spesifik dan mendalam dalam konteks bisnis yang sesuai dan memberikan rekomendasi yang dapat membangun bisnis untuk ke depannya.
         Perhatikan chart dengan detail, jelaskan data-datanya, dan sampaikan semua informasi yang bermanfaat kepada pelaku UMKM.
-        Tekankan kalimat atau kata yang penting dengan bold/underline/italic. Buatkan poin-poin atau tabel jika perlu.
-        Setiap chart yang Kamu interpretasikan, berikan judul yang sesuai dengan nama data dan juga 1 emoji di depan judul yang sesuai dengan yang Kamu interpretasikan supaya user UMKM paham akan data yang dibahas.
+        Tekankan kalimat atau kata yang penting dengan bold/underline/italic, sesuaikan saja. Buatkan poin-poin atau tabel jika perlu.
+        Setiap chart yang Kamu interpretasikan, berikan judul dengan ukuran dont yang lebih besar yang sesuai dengan nama data dan juga 1 emoji di depan judul yang sesuai dengan yang Kamu interpretasikan supaya user UMKM paham akan data yang dibahas.
 
         Berikut adalah visualisasi yang tersedia:
         """
