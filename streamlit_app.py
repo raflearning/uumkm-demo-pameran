@@ -179,7 +179,7 @@ if data is not None and selected_sheet:
 
         if user_question:
             try:
-                model_chatbot = genai.GenerativeModel(model_name='gemini-1.5-pro-latest')  # Initialize Gemini Model
+                model = genai.GenerativeModel(model_name='gemini-1.5-pro-latest')  # Initialize Gemini Model
                 general_chatbot_prompt = (
                     f"""
                     Kamu adalah seorang data analyst dan business intelligence handal dan profesional. Tugas kamu adalah menjawab pertanyaan dari user terkait hasil interpretasi pada. Gunakan bahasa yang lumayan santai, mudah dipahami, beginner hingga expert friendly, dan tetap bercirikhas bisnis.
@@ -189,7 +189,7 @@ if data is not None and selected_sheet:
                     Berikan judul yang sesuai dengan topik dan juga 1 emoji di depan judul yang sesuai dengan yang Kamu interpretasikan supaya user UMKM paham akan data yang dibahas.
                     """
                 )
-                response = model_chatbot.generate_content(f"Prompt: {general_chatbot_prompt}\nPertanyaan: {user_question}\nData: {st.session_state.interpretation_text}")
+                response = model.generate_content(f"Prompt: {general_chatbot_prompt}\nPertanyaan: {user_question}\nData: {st.session_state.interpretation_text}")
 
                 chatbot_response = response.text
 
