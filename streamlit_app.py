@@ -23,10 +23,7 @@ st.markdown("---")
 
 # Ambil API key dari variabel lingkungan
 API_KEY = os.getenv('API_KEY')
-if API_KEY:
-    genai.configure(api_key=API_KEY)
-else:
-    st.error("API key is missing. Please set it in the .env file.")
+genai.configure(api_key=API_KEY)
 
 # Function to load data from all sheets
 def load_data(uploaded_file):
