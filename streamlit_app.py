@@ -139,15 +139,19 @@ if data is not None and selected_sheet:
         elif selected_sheet == 'Lainnya':
             charts, interpretation = visualize_lainnya(sheet_data, selected_business_info, model)
 
-        # Save interpretation in session state
+        # Save interpretation and charts in session state
         if 'interpretation_text' not in st.session_state:
-            st.session_state.interpretation_text = ""
+            st.session_state.interpretation_text = interpretation
+        else:
+            st.session_state.interpretation_text = interpretation
+
         if 'charts' not in st.session_state:
-            st.session_state.charts = []
+            st.session_state.charts = charts
+        else:
+            st.session_state.charts = charts
         
         # Display all the relevant charts first
         if charts:
-            st.session_state.charts = charts
             for chart in st.session_state.charts:
                 figure = chart.get('figure')
                 try:
@@ -159,10 +163,9 @@ if data is not None and selected_sheet:
             # Display interpretation after the charts
             interpretation_text = ""
             interpretation_box = st.empty()
-            for i in range(len(interpretation)):
-                interpretation_text += interpretation[i]
-                st.session_state.interpretation_text += interpretation[i]
-                interpretation_box.markdown(st.session_state.interpretation_text)
+            for i in range(len(st.session_state.interpretation_text)):
+                interpretation_text += st.session_state.interpretation_text[i]
+                interpretation_box.markdown(interpretation_text)
                 time.sleep(0.005)  # Adjust the speed of typing effect
 
     # Create a container for the chatbot section that appears after interpretation
