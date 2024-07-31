@@ -152,11 +152,16 @@ if data is not None and selected_sheet:
 
             # Display interpretation
             st.write("### 📊Insight dari Bisnis Kamu!")
-            st.write(interpretation)
+            interpretation_text = ""
+            interpretation_box = st.empty()
+            for i in range(len(interpretation)):
+                interpretation_text += interpretation[i]
+                interpretation_box.markdown(interpretation_text)
+                time.sleep(0.01)  # Adjust the speed of typing effect
 
             # Chatbot section
-            st.write("### 💬 Chatbot Gemini")
-            st.write("Silakan ajukan pertanyaan terkait visualisasi di atas, dan Gemini akan menjawab berdasarkan data yang ada.")
+            st.write("### 💬Chatbot")
+            st.write("Kamu masih punya pertanyaan terkait hasil visualisasinya? Tanyakan di bawah ini ya!")
             
             # Input box for user questions
             user_question = st.text_input("Ajukan pertanyaan kamu di sini:")
@@ -171,7 +176,7 @@ if data is not None and selected_sheet:
                 typing_box = st.empty()
                 for i in range(len(chatbot_response)):
                     typing_response += chatbot_response[i]
-                    typing_box.text_area("Gemini:", value=typing_response, height=200)
-                    time.sleep(0.05)  # Adjust the speed of typing effect
+                    typing_box.markdown(typing_response)
+                    time.sleep(0.01)  # Adjust the speed of typing effect
 
 # End of Streamlit app
