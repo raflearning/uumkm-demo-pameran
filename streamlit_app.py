@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import time
 import google.generativeai as genai
+from google.api_core.exceptions import InternalServerError
 from dotenv import load_dotenv
 from vis_interpret import (
     visualize_pelanggan, visualize_produk, visualize_transaksi_penjualan, 
@@ -139,7 +140,11 @@ if data is not None and selected_sheet:
                 return [], ""
 
         # Get visualization and interpretation
-        charts, interpretation = get_visualization_and_interpretation(sheet_data, selected_business_info, selected_sheet, model)
+        try:
+            charts, interpretation = get_visualization_and_interpretation(sheet_data, selected_business_info, selected_sheet, model)
+        except InternalServerError as e:
+            st.error("Terjadi kesalahan pada server saat mencoba mendapatkan interpretasi. Silakan coba lagi nanti.")
+            st.stop()
 
         # Function to display charts one by one
         def display_charts_one_by_one(charts):
@@ -163,30 +168,33 @@ if data is not None and selected_sheet:
                     interpretation_text += interpretation[i]
                     interpretation_box.markdown(interpretation_text)
                     time.sleep(0.01)  # Adjust the speed of typing effect
+                return interpretation_text
+            return ""
 
         # Display interpretation
-        display_interpretation_one_by_one(interpretation)
+        interpretation_text = display_interpretation_one_by_one(interpretation)
 
         # Create a container for the chatbot section that appears after interpretation
-        st.markdown("---")
-        st.write("### 💬Chatbot AI")
-        st.write("Kamu masih punya pertanyaan terkait hasil visualisasinya? Tanyakan di bawah ya!")
+        if interpretation_text:
+            st.markdown("---")
+            st.write("### 💬Chatbot AI")
+            st.write("Kamu masih punya pertanyaan terkait hasil visualisasinya? Tanyakan di bawah ya!")
 
-        # Input box for user questions
-        user_question = st.text_input("Ajukan pertanyaan kamu di sini...")
+            # Input box for user questions
+            user_question = st.text_input("Ajukan pertanyaan kamu di sini...")
 
-        if user_question:
-            try:
-                response = model.generate_content(f"Pertanyaan: {user_question}\nData: {interpretation}")
-                chatbot_response = response.text
+            if user_question:
+                try:
+                    response = model.generate_content(f"Pertanyaan: {user_question}\nData: {interpretation_text}")
+                    chatbot_response = response.text
 
-                # Display the response as typing effect
-                st.write("#### Jawaban Chatbot:")
-                typing_response = ""
-                typing_box = st.empty()
-                for i in range(len(chatbot_response)):
-                    typing_response += chatbot_response[i]
-                    typing_box.markdown(typing_response)
-                    time.sleep(0.005)  # Adjust the speed of typing effect
-            except Exception as e:
-                st.write(f"### Error: {e}")
+                    # Display the response as typing effect
+                    st.write("#### Jawaban Chatbot:")
+                    typing_response = ""
+                    typing_box = st.empty()
+                    for i in range(len(chatbot_response)):
+                        typing_response += chatbot_response[i]
+                        typing_box.markdown(typing_response)
+                        time.sleep(0.005)  # Adjust the speed of typing effect
+                except Exception as e:
+                    st.write(f"### Error: {e}")
