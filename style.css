@@ -1,0 +1,23 @@
+/* style.css */
+.header {
+    position: -webkit-sticky; /* For Safari */
+    position: sticky;
+    top: 0;
+    background-color: white;
+    padding: 10px;
+    z-index: 1000;
+    border-bottom: 1px solid #ddd;
+}
+.header .left {
+    float: left;
+    font-size: 24px;
+    font-weight: bold;
+}
+.header .right {
+    float: right;
+}
+.header::after {
+    content: "";
+    display: table;
+    clear: both;
+}
