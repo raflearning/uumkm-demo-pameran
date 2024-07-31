@@ -113,54 +113,56 @@ if data is not None and selected_sheet:
     selected_business_info = st.selectbox("", business_options)
 
     if selected_business_info:
-        # Initialize visualization and interpretation status
-        if 'charts' not in st.session_state:
-            st.session_state['charts'] = []
-        if 'interpretation_text' not in st.session_state:
-            st.session_state['interpretation_text'] = ""
-        if 'visualization_done' not in st.session_state:
-            st.session_state['visualization_done'] = False
-        
-        if not st.session_state['visualization_done']:
-            # Call appropriate visualization function based on the selected sheet
-            if selected_sheet == 'Pelanggan':
-                charts, interpretation = visualize_pelanggan(sheet_data, selected_business_info, model)
-            elif selected_sheet == 'Produk':
-                charts, interpretation = visualize_produk(sheet_data, selected_business_info, model)
-            elif selected_sheet == 'Transaksi Penjualan':
-                charts, interpretation = visualize_transaksi_penjualan(sheet_data, selected_business_info, model)
-            elif selected_sheet == 'Lokasi Penjualan':
-                charts, interpretation = visualize_lokasi_penjualan(sheet_data, selected_business_info, model)
-            elif selected_sheet == 'Staf Penjualan':
-                charts, interpretation = visualize_staf_penjualan(sheet_data, selected_business_info, model)
-            elif selected_sheet == 'Inventaris':
-                charts, interpretation = visualize_inventaris(sheet_data, selected_business_info, model)
-            elif selected_sheet == 'Promosi dan Pemasaran':
-                charts, interpretation = visualize_promosi_pemasaran(sheet_data, selected_business_info, model)
-            elif selected_sheet == 'Feedback dan Pengembalian':
-                charts, interpretation = visualize_feedback_pengembalian(sheet_data, selected_business_info, model)
-            elif selected_sheet == 'Analisis Penjualan':
-                charts, interpretation = visualize_analisis_penjualan(sheet_data, selected_business_info, model)
-            elif selected_sheet == 'Lainnya':
-                charts, interpretation = visualize_lainnya(sheet_data, selected_business_info, model)
+        # Initialize variables for storing charts and interpretation
+        charts = []
+        interpretation = ""
+        visualization_done = False
 
-            # Save interpretation and charts in local variables
-            st.session_state['interpretation_text'] = interpretation
-            st.session_state['charts'] = charts
+        # Function to display charts one by one
+        def display_charts():
+            global visualization_done
+            if not visualization_done:
+                # Call appropriate visualization function based on the selected sheet
+                if selected_sheet == 'Pelanggan':
+                    charts, interpretation = visualize_pelanggan(sheet_data, selected_business_info, model)
+                elif selected_sheet == 'Produk':
+                    charts, interpretation = visualize_produk(sheet_data, selected_business_info, model)
+                elif selected_sheet == 'Transaksi Penjualan':
+                    charts, interpretation = visualize_transaksi_penjualan(sheet_data, selected_business_info, model)
+                elif selected_sheet == 'Lokasi Penjualan':
+                    charts, interpretation = visualize_lokasi_penjualan(sheet_data, selected_business_info, model)
+                elif selected_sheet == 'Staf Penjualan':
+                    charts, interpretation = visualize_staf_penjualan(sheet_data, selected_business_info, model)
+                elif selected_sheet == 'Inventaris':
+                    charts, interpretation = visualize_inventaris(sheet_data, selected_business_info, model)
+                elif selected_sheet == 'Promosi dan Pemasaran':
+                    charts, interpretation = visualize_promosi_pemasaran(sheet_data, selected_business_info, model)
+                elif selected_sheet == 'Feedback dan Pengembalian':
+                    charts, interpretation = visualize_feedback_pengembalian(sheet_data, selected_business_info, model)
+                elif selected_sheet == 'Analisis Penjualan':
+                    charts, interpretation = visualize_analisis_penjualan(sheet_data, selected_business_info, model)
+                elif selected_sheet == 'Lainnya':
+                    charts, interpretation = visualize_lainnya(sheet_data, selected_business_info, model)
 
-            # Display all the relevant charts one by one
-            for i, chart in enumerate(st.session_state['charts']):
-                figure = chart.get('figure')
-                try:
-                    st.plotly_chart(figure)
-                    time.sleep(1)  # Jeda antar chart
-                except Exception as e:
-                    st.write(f"### Error: Could not display Plotly figure. Error: {e}")
+                # Display all the relevant charts one by one
+                for i, chart in enumerate(charts):
+                    figure = chart.get('figure')
+                    try:
+                        st.plotly_chart(figure)
+                        time.sleep(1)  # Jeda antar chart
+                    except Exception as e:
+                        st.write(f"### Error: Could not display Plotly figure. Error: {e}")
 
-            # Mark visualization as done
-            st.session_state['visualization_done'] = True
+                # Save interpretation in a variable
+                st.session_state['interpretation_text'] = interpretation
 
-        if st.session_state['visualization_done']:
+                # Mark visualization as done
+                visualization_done = True
+
+        # Run the display_charts function
+        display_charts()
+
+        if visualization_done:
             # Display interpretation after all charts are shown
             interpretation_text = st.session_state['interpretation_text']
             st.markdown(interpretation_text)
