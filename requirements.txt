@@ -3,3 +3,4 @@ google.generativeai
 plotly
 kaleido
 openpyxl
+python-dotenv

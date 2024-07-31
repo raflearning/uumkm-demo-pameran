@@ -3,6 +3,7 @@ import os
 import pandas as pd
 import google.generativeai as genai
 import plotly.io as pio
+from dotenv import load_dotenv
 from vis_interpret import (
     visualize_pelanggan, visualize_produk, visualize_transaksi_penjualan, 
     visualize_lokasi_penjualan, visualize_staf_penjualan, visualize_inventaris, 
@@ -18,9 +19,13 @@ st.write(
 # Section divider
 st.markdown("---")
 
-# Configure Google Gemini API
-API_KEY = 'AIzaSyAwxZgxaWA4z77MVMt_O0bWhuDsIVcJNOY'
-genai.configure(api_key=API_KEY)
+# Muat variabel lingkungan dari file .env
+load_dotenv()
+
+# Ambil API key dari variabel lingkungan
+api_key = os.getenv('API_KEY')
+
+genai.configure(api_key=api_key)
 model = genai.GenerativeModel(model_name='gemini-1.5-pro-latest')
 
 # Function to load data from all sheets
