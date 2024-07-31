@@ -114,37 +114,40 @@ if data is not None and selected_sheet:
 
     if selected_business_info:
         # Initialize variables for storing charts and interpretation
-        charts = []
-        interpretation = ""
+        if 'charts' not in st.session_state:
+            st.session_state['charts'] = []
+        if 'interpretation_text' not in st.session_state:
+            st.session_state['interpretation_text'] = ""
 
-        # Call appropriate visualization function based on the selected sheet
-        if selected_sheet == 'Pelanggan':
-            charts, interpretation = visualize_pelanggan(sheet_data, selected_business_info, model)
-        elif selected_sheet == 'Produk':
-            charts, interpretation = visualize_produk(sheet_data, selected_business_info, model)
-        elif selected_sheet == 'Transaksi Penjualan':
-            charts, interpretation = visualize_transaksi_penjualan(sheet_data, selected_business_info, model)
-        elif selected_sheet == 'Lokasi Penjualan':
-            charts, interpretation = visualize_lokasi_penjualan(sheet_data, selected_business_info, model)
-        elif selected_sheet == 'Staf Penjualan':
-            charts, interpretation = visualize_staf_penjualan(sheet_data, selected_business_info, model)
-        elif selected_sheet == 'Inventaris':
-            charts, interpretation = visualize_inventaris(sheet_data, selected_business_info, model)
-        elif selected_sheet == 'Promosi dan Pemasaran':
-            charts, interpretation = visualize_promosi_pemasaran(sheet_data, selected_business_info, model)
-        elif selected_sheet == 'Feedback dan Pengembalian':
-            charts, interpretation = visualize_feedback_pengembalian(sheet_data, selected_business_info, model)
-        elif selected_sheet == 'Analisis Penjualan':
-            charts, interpretation = visualize_analisis_penjualan(sheet_data, selected_business_info, model)
-        elif selected_sheet == 'Lainnya':
-            charts, interpretation = visualize_lainnya(sheet_data, selected_business_info, model)
+        if not st.session_state['charts']:
+            # Call appropriate visualization function based on the selected sheet
+            if selected_sheet == 'Pelanggan':
+                charts, interpretation = visualize_pelanggan(sheet_data, selected_business_info, model)
+            elif selected_sheet == 'Produk':
+                charts, interpretation = visualize_produk(sheet_data, selected_business_info, model)
+            elif selected_sheet == 'Transaksi Penjualan':
+                charts, interpretation = visualize_transaksi_penjualan(sheet_data, selected_business_info, model)
+            elif selected_sheet == 'Lokasi Penjualan':
+                charts, interpretation = visualize_lokasi_penjualan(sheet_data, selected_business_info, model)
+            elif selected_sheet == 'Staf Penjualan':
+                charts, interpretation = visualize_staf_penjualan(sheet_data, selected_business_info, model)
+            elif selected_sheet == 'Inventaris':
+                charts, interpretation = visualize_inventaris(sheet_data, selected_business_info, model)
+            elif selected_sheet == 'Promosi dan Pemasaran':
+                charts, interpretation = visualize_promosi_pemasaran(sheet_data, selected_business_info, model)
+            elif selected_sheet == 'Feedback dan Pengembalian':
+                charts, interpretation = visualize_feedback_pengembalian(sheet_data, selected_business_info, model)
+            elif selected_sheet == 'Analisis Penjualan':
+                charts, interpretation = visualize_analisis_penjualan(sheet_data, selected_business_info, model)
+            elif selected_sheet == 'Lainnya':
+                charts, interpretation = visualize_lainnya(sheet_data, selected_business_info, model)
 
-        # Save interpretation and charts in session state
-        st.session_state['interpretation_text'] = interpretation
-        st.session_state['charts'] = charts
+            # Save interpretation and charts in session state
+            st.session_state['interpretation_text'] = interpretation
+            st.session_state['charts'] = charts
 
         # Display all the relevant charts first
-        if charts:
+        if st.session_state['charts']:
             for chart in st.session_state['charts']:
                 figure = chart.get('figure')
                 try:
