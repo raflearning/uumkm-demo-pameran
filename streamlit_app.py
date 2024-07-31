@@ -1,8 +1,8 @@
 import streamlit as st
-import os
 import pandas as pd
+import time
+from streamlit_chat import message
 import google.generativeai as genai
-import plotly.io as pio
 from dotenv import load_dotenv
 from vis_interpret import (
     visualize_pelanggan, visualize_produk, visualize_transaksi_penjualan, 
@@ -163,7 +163,12 @@ if data is not None and selected_sheet:
 
             if user_question:
                 response = model.generate_content(f"Pertanyaan: {user_question}\nData: {interpretation}")
+                chatbot_response = response.text
+
+                # Display the response as typing effect
                 st.write("#### Jawaban Chatbot:")
-                st.write(response.text)
+                for i in range(1, len(chatbot_response) + 1):
+                    st.text_area("Gemini:", value=chatbot_response[:i], height=200, key=f"response-{i}")
+                    time.sleep(0.05)  # Adjust the speed of typing effect
 
 # End of Streamlit app
