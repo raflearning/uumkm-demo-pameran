@@ -4,3 +4,4 @@ plotly
 kaleido
 openpyxl
 python-dotenv
+streamlit_chat
