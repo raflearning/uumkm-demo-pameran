@@ -113,16 +113,14 @@ if data is not None and selected_sheet:
     selected_business_info = st.selectbox("", business_options)
 
     if selected_business_info:
-        # Reset visualization and interpretation state when new business info is selected
-        if 'last_selected_business_info' not in st.session_state:
-            st.session_state['last_selected_business_info'] = ""
-        
-        if st.session_state['last_selected_business_info'] != selected_business_info:
+        # Initialize visualization and interpretation status
+        if 'charts' not in st.session_state:
             st.session_state['charts'] = []
+        if 'interpretation_text' not in st.session_state:
             st.session_state['interpretation_text'] = ""
+        if 'visualization_done' not in st.session_state:
             st.session_state['visualization_done'] = False
-            st.session_state['last_selected_business_info'] = selected_business_info
-
+        
         if not st.session_state['visualization_done']:
             # Call appropriate visualization function based on the selected sheet
             if selected_sheet == 'Pelanggan':
@@ -146,19 +144,18 @@ if data is not None and selected_sheet:
             elif selected_sheet == 'Lainnya':
                 charts, interpretation = visualize_lainnya(sheet_data, selected_business_info, model)
 
-            # Save interpretation and charts in session state
+            # Save interpretation and charts in local variables
             st.session_state['interpretation_text'] = interpretation
             st.session_state['charts'] = charts
 
-            # Display all the relevant charts first, one by one
+            # Display all the relevant charts one by one
             for i, chart in enumerate(st.session_state['charts']):
                 figure = chart.get('figure')
                 try:
-                    # Directly display the Plotly figure
                     st.plotly_chart(figure)
+                    time.sleep(1)  # Jeda antar chart
                 except Exception as e:
                     st.write(f"### Error: Could not display Plotly figure. Error: {e}")
-                time.sleep(1)  # Jeda antar chart
 
             # Mark visualization as done
             st.session_state['visualization_done'] = True
@@ -166,30 +163,28 @@ if data is not None and selected_sheet:
         if st.session_state['visualization_done']:
             # Display interpretation after all charts are shown
             interpretation_text = st.session_state['interpretation_text']
-            interpretation_box = st.empty()
-            interpretation_box.markdown(interpretation_text)
+            st.markdown(interpretation_text)
 
         # Create a container for the chatbot section that appears after interpretation
-        with st.container():
-            st.markdown("---")
-            st.write("### 💬Chatbot AI")
-            st.write("Kamu masih punya pertanyaan terkait hasil visualisasinya? Tanyakan di bawah ya!")
+        st.markdown("---")
+        st.write("### 💬Chatbot AI")
+        st.write("Kamu masih punya pertanyaan terkait hasil visualisasinya? Tanyakan di bawah ya!")
 
-            # Input box for user questions
-            user_question = st.text_input("Ajukan pertanyaan kamu di sini...")
+        # Input box for user questions
+        user_question = st.text_input("Ajukan pertanyaan kamu di sini...")
 
-            if user_question:
-                try:
-                    response = model.generate_content(f"Pertanyaan: {user_question}\nData: {st.session_state['interpretation_text']}")
-                    chatbot_response = response.text
+        if user_question:
+            try:
+                response = model.generate_content(f"Pertanyaan: {user_question}\nData: {st.session_state['interpretation_text']}")
+                chatbot_response = response.text
 
-                    # Display the response as typing effect
-                    st.write("#### Jawaban Chatbot:")
-                    typing_response = ""
-                    typing_box = st.empty()
-                    for i in range(len(chatbot_response)):
-                        typing_response += chatbot_response[i]
-                        typing_box.markdown(typing_response)
-                        time.sleep(0.005)  # Adjust the speed of typing effect
-                except Exception as e:
-                    st.write(f"### Error: {e}")
+                # Display the response as typing effect
+                st.write("#### Jawaban Chatbot:")
+                typing_response = ""
+                typing_box = st.empty()
+                for i in range(len(chatbot_response)):
+                    typing_response += chatbot_response[i]
+                    typing_box.markdown(typing_response)
+                    time.sleep(0.005)  # Adjust the speed of typing effect
+            except Exception as e:
+                st.write(f"### Error: {e}")
