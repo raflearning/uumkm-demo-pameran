@@ -11,6 +11,8 @@ from vis_interpret import (
     visualize_analisis_penjualan, visualize_lainnya
 )
 
+load_dotenv()
+
 st.title("🚀Pantau Kinerja Bisnis Kamu!")
 st.write(
     "Memudahkan kamu untuk mengambil informasi bisnis dan rekomendasi pengambilan keputusan dengan Artificial Intelligence!"
@@ -19,14 +21,12 @@ st.write(
 # Section divider
 st.markdown("---")
 
-# Muat variabel lingkungan dari file .env
-load_dotenv()
-
 # Ambil API key dari variabel lingkungan
-api_key = os.getenv('API_KEY')
-
-genai.configure(api_key=api_key)
-model = genai.GenerativeModel(model_name='gemini-1.5-pro-latest')
+API_KEY = os.getenv('API_KEY')
+if API_KEY:
+    genai.configure(api_key=API_KEY)
+else:
+    st.error("API key is missing. Please set it in the .env file.")
 
 # Function to load data from all sheets
 def load_data(uploaded_file):
@@ -121,6 +121,7 @@ if data is not None and selected_sheet:
         # Initialize variables for storing charts and interpretation
         charts = []
         interpretation = ""
+        model = genai.GenerativeModel(model_name='gemini-1.5-pro-latest') # Initialize Gemini Model
 
         # Call appropriate visualization function based on the selected sheet
         if selected_sheet == 'Pelanggan':
