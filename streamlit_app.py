@@ -21,6 +21,7 @@ st.markdown("---")
 # Ambil API key dari variabel lingkungan
 API_KEY = st.secrets["general"]["API_KEY"]
 genai.configure(api_key=API_KEY)
+model = genai.GenerativeModel(model_name='gemini-1.5-pro-latest')  # Model untuk interpretasi dan chatbot
 
 # Function to load data from all sheets
 def load_data(uploaded_file):
@@ -115,29 +116,28 @@ if data is not None and selected_sheet:
         # Initialize variables for storing charts and interpretation
         charts = []
         interpretation = ""
-        model_interpretasi = genai.GenerativeModel(model_name='gemini-1.5-pro-latest') # Model untuk interpretasi
 
         # Call appropriate visualization function based on the selected sheet
         if selected_sheet == 'Pelanggan':
-            charts, interpretation = visualize_pelanggan(sheet_data, selected_business_info, model_interpretasi)
+            charts, interpretation = visualize_pelanggan(sheet_data, selected_business_info, model)
         elif selected_sheet == 'Produk':
-            charts, interpretation = visualize_produk(sheet_data, selected_business_info, model_interpretasi)
+            charts, interpretation = visualize_produk(sheet_data, selected_business_info, model)
         elif selected_sheet == 'Transaksi Penjualan':
-            charts, interpretation = visualize_transaksi_penjualan(sheet_data, selected_business_info, model_interpretasi)
+            charts, interpretation = visualize_transaksi_penjualan(sheet_data, selected_business_info, model)
         elif selected_sheet == 'Lokasi Penjualan':
-            charts, interpretation = visualize_lokasi_penjualan(sheet_data, selected_business_info, model_interpretasi)
+            charts, interpretation = visualize_lokasi_penjualan(sheet_data, selected_business_info, model)
         elif selected_sheet == 'Staf Penjualan':
-            charts, interpretation = visualize_staf_penjualan(sheet_data, selected_business_info, model_interpretasi)
+            charts, interpretation = visualize_staf_penjualan(sheet_data, selected_business_info, model)
         elif selected_sheet == 'Inventaris':
-            charts, interpretation = visualize_inventaris(sheet_data, selected_business_info, model_interpretasi)
+            charts, interpretation = visualize_inventaris(sheet_data, selected_business_info, model)
         elif selected_sheet == 'Promosi dan Pemasaran':
-            charts, interpretation = visualize_promosi_pemasaran(sheet_data, selected_business_info, model_interpretasi)
+            charts, interpretation = visualize_promosi_pemasaran(sheet_data, selected_business_info, model)
         elif selected_sheet == 'Feedback dan Pengembalian':
-            charts, interpretation = visualize_feedback_pengembalian(sheet_data, selected_business_info, model_interpretasi)
+            charts, interpretation = visualize_feedback_pengembalian(sheet_data, selected_business_info, model)
         elif selected_sheet == 'Analisis Penjualan':
-            charts, interpretation = visualize_analisis_penjualan(sheet_data, selected_business_info, model_interpretasi)
+            charts, interpretation = visualize_analisis_penjualan(sheet_data, selected_business_info, model)
         elif selected_sheet == 'Lainnya':
-            charts, interpretation = visualize_lainnya(sheet_data, selected_business_info, model_interpretasi)
+            charts, interpretation = visualize_lainnya(sheet_data, selected_business_info, model)
 
         # Save interpretation and charts in session state
         st.session_state['interpretation_text'] = interpretation
@@ -161,38 +161,27 @@ if data is not None and selected_sheet:
                 interpretation_box.markdown(interpretation_text)
                 time.sleep(0.005)  # Adjust the speed of typing effect
 
-    # Create a container for the chatbot section that appears after interpretation
-    with st.container():
-        st.markdown("---")
-        st.write("### 💬Chatbot AI")
-        st.write("Kamu masih punya pertanyaan terkait hasil visualisasinya? Tanyakan di bawah ya!")
+        # Create a container for the chatbot section that appears after interpretation
+        with st.container():
+            st.markdown("---")
+            st.write("### 💬Chatbot AI")
+            st.write("Kamu masih punya pertanyaan terkait hasil visualisasinya? Tanyakan di bawah ya!")
 
-        # Input box for user questions
-        user_question = st.text_input("Ajukan pertanyaan kamu di sini...")
+            # Input box for user questions
+            user_question = st.text_input("Ajukan pertanyaan kamu di sini...")
 
-        if user_question:
-            try:
-                model_chatbot = genai.GenerativeModel(model_name='gemini-1.5-pro-latest')  # Model terpisah untuk chatbot
-                general_chatbot_prompt = (
-                    f"""
-                    Kamu adalah seorang data analyst dan business intelligence handal dan profesional. Tugas kamu adalah menjawab pertanyaan dari user terkait hasil interpretasi pada. Gunakan bahasa yang lumayan santai, mudah dipahami, beginner hingga expert friendly, dan tetap bercirikhas bisnis.
-                    Interpretasikan secara spesifik dan mendalam dalam konteks bisnis yang sesuai dan memberikan rekomendasi yang dapat membangun bisnis untuk ke depannya.
-                    Perhatikan chart dengan detail, jelaskan data-datanya, dan sampaikan semua informasi yang bermanfaat kepada pelaku UMKM.
-                    Tekankan kalimat atau kata yang penting dengan **bold**/underline/italic. Buatkan poin-poin atau tabel jika perlu.
-                    Berikan judul yang sesuai dengan topik dan juga 1 emoji di depan judul yang sesuai dengan yang Kamu interpretasikan supaya user UMKM paham akan data yang dibahas.
-                    """
-                )
-                response = model_chatbot.generate_content(f"Prompt: {general_chatbot_prompt}\nPertanyaan: {user_question}\nData: {st.session_state['interpretation_text']}")
+            if user_question:
+                try:
+                    response = model.generate_content(f"Pertanyaan: {user_question}\nData: {st.session_state['interpretation_text']}")
+                    chatbot_response = response.text
 
-                chatbot_response = response.text
-
-                # Display the response as typing effect
-                st.write("#### Jawaban Chatbot:")
-                typing_response = ""
-                typing_box = st.empty()
-                for i in range(len(chatbot_response)):
-                    typing_response += chatbot_response[i]
-                    typing_box.markdown(typing_response)
-                    time.sleep(0.005)  # Adjust the speed of typing effect
-            except Exception as e:
-                st.write(f"### Error: {e}")
+                    # Display the response as typing effect
+                    st.write("#### Jawaban Chatbot:")
+                    typing_response = ""
+                    typing_box = st.empty()
+                    for i in range(len(chatbot_response)):
+                        typing_response += chatbot_response[i]
+                        typing_box.markdown(typing_response)
+                        time.sleep(0.005)  # Adjust the speed of typing effect
+                except Exception as e:
+                    st.write(f"### Error: {e}")
