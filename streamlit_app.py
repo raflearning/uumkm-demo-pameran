@@ -157,26 +157,28 @@ if data is not None and selected_sheet:
             for i in range(len(interpretation)):
                 interpretation_text += interpretation[i]
                 interpretation_box.markdown(interpretation_text)
-                time.sleep(0.01)  # Adjust the speed of typing effect
+                time.sleep(0.005)  # Adjust the speed of typing effect
 
-            # Chatbot section
-            st.write("### 💬Chatbot")
-            st.write("Kamu masih punya pertanyaan terkait hasil visualisasinya? Tanyakan di bawah ini ya!")
-            
-            # Input box for user questions
-            user_question = st.text_input("Ajukan pertanyaan kamu di sini:")
+# Chatbot section
+st.markdown("---")
+st.write("### 💬 Chatbot Gemini")
+st.write("Silakan ajukan pertanyaan terkait visualisasi di atas, dan Gemini akan menjawab berdasarkan data yang ada.")
 
-            if user_question:
-                response = model.generate_content(f"Pertanyaan: {user_question}\nData: {interpretation}")
-                chatbot_response = response.text
+# Input box for user questions
+user_question = st.text_input("Ajukan pertanyaan kamu di sini:")
 
-                # Display the response as typing effect
-                st.write("#### Jawaban Chatbot:")
-                typing_response = ""
-                typing_box = st.empty()
-                for i in range(len(chatbot_response)):
-                    typing_response += chatbot_response[i]
-                    typing_box.markdown(typing_response)
-                    time.sleep(0.01)  # Adjust the speed of typing effect
+if user_question:
+    model = genai.GenerativeModel(model_name='gemini-1.5-pro-latest')  # Initialize Gemini Model
+    response = model.generate_content(f"Pertanyaan: {user_question}\nData: {interpretation}")
+    chatbot_response = response.text
+
+    # Display the response as typing effect
+    st.write("#### Jawaban Chatbot:")
+    typing_response = ""
+    typing_box = st.empty()
+    for i in range(len(chatbot_response)):
+        typing_response += chatbot_response[i]
+        typing_box.markdown(typing_response)
+        time.sleep(0.005)  # Adjust the speed of typing effect
 
 # End of Streamlit app
