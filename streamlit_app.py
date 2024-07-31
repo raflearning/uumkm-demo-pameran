@@ -185,7 +185,7 @@ if data is not None and selected_sheet:
 
             if user_question:
                 try:
-                    response = model.generate_content(f"Pertanyaan: {user_question}\nData: {interpretation_text}")
+                    response = model.generate_content(f"Pertanyaan: {user_question}\nData: {interpretation_text}\nJawab dalam konteks bisnis.")
                     chatbot_response = response.text
 
                     # Display the response as typing effect
