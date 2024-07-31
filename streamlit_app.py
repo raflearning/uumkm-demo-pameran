@@ -115,44 +115,37 @@ if data is not None and selected_sheet:
         # Initialize variables for storing charts and interpretation
         charts = []
         interpretation = ""
-        model = genai.GenerativeModel(model_name='gemini-1.5-pro-latest') # Initialize Gemini Model
+        model_interpretasi = genai.GenerativeModel(model_name='gemini-1.5-pro-latest') # Model untuk interpretasi
 
         # Call appropriate visualization function based on the selected sheet
         if selected_sheet == 'Pelanggan':
-            charts, interpretation = visualize_pelanggan(sheet_data, selected_business_info, model)
+            charts, interpretation = visualize_pelanggan(sheet_data, selected_business_info, model_interpretasi)
         elif selected_sheet == 'Produk':
-            charts, interpretation = visualize_produk(sheet_data, selected_business_info, model)
+            charts, interpretation = visualize_produk(sheet_data, selected_business_info, model_interpretasi)
         elif selected_sheet == 'Transaksi Penjualan':
-            charts, interpretation = visualize_transaksi_penjualan(sheet_data, selected_business_info, model)
+            charts, interpretation = visualize_transaksi_penjualan(sheet_data, selected_business_info, model_interpretasi)
         elif selected_sheet == 'Lokasi Penjualan':
-            charts, interpretation = visualize_lokasi_penjualan(sheet_data, selected_business_info, model)
+            charts, interpretation = visualize_lokasi_penjualan(sheet_data, selected_business_info, model_interpretasi)
         elif selected_sheet == 'Staf Penjualan':
-            charts, interpretation = visualize_staf_penjualan(sheet_data, selected_business_info, model)
+            charts, interpretation = visualize_staf_penjualan(sheet_data, selected_business_info, model_interpretasi)
         elif selected_sheet == 'Inventaris':
-            charts, interpretation = visualize_inventaris(sheet_data, selected_business_info, model)
+            charts, interpretation = visualize_inventaris(sheet_data, selected_business_info, model_interpretasi)
         elif selected_sheet == 'Promosi dan Pemasaran':
-            charts, interpretation = visualize_promosi_pemasaran(sheet_data, selected_business_info, model)
+            charts, interpretation = visualize_promosi_pemasaran(sheet_data, selected_business_info, model_interpretasi)
         elif selected_sheet == 'Feedback dan Pengembalian':
-            charts, interpretation = visualize_feedback_pengembalian(sheet_data, selected_business_info, model)
+            charts, interpretation = visualize_feedback_pengembalian(sheet_data, selected_business_info, model_interpretasi)
         elif selected_sheet == 'Analisis Penjualan':
-            charts, interpretation = visualize_analisis_penjualan(sheet_data, selected_business_info, model)
+            charts, interpretation = visualize_analisis_penjualan(sheet_data, selected_business_info, model_interpretasi)
         elif selected_sheet == 'Lainnya':
-            charts, interpretation = visualize_lainnya(sheet_data, selected_business_info, model)
+            charts, interpretation = visualize_lainnya(sheet_data, selected_business_info, model_interpretasi)
 
         # Save interpretation and charts in session state
-        if 'interpretation_text' not in st.session_state:
-            st.session_state.interpretation_text = interpretation
-        else:
-            st.session_state.interpretation_text = interpretation
+        st.session_state['interpretation_text'] = interpretation
+        st.session_state['charts'] = charts
 
-        if 'charts' not in st.session_state:
-            st.session_state.charts = charts
-        else:
-            st.session_state.charts = charts
-        
         # Display all the relevant charts first
         if charts:
-            for chart in st.session_state.charts:
+            for chart in st.session_state['charts']:
                 figure = chart.get('figure')
                 try:
                     # Directly display the Plotly figure
@@ -163,8 +156,8 @@ if data is not None and selected_sheet:
             # Display interpretation after the charts
             interpretation_text = ""
             interpretation_box = st.empty()
-            for i in range(len(st.session_state.interpretation_text)):
-                interpretation_text += st.session_state.interpretation_text[i]
+            for i in range(len(st.session_state['interpretation_text'])):
+                interpretation_text += st.session_state['interpretation_text'][i]
                 interpretation_box.markdown(interpretation_text)
                 time.sleep(0.005)  # Adjust the speed of typing effect
 
@@ -179,7 +172,7 @@ if data is not None and selected_sheet:
 
         if user_question:
             try:
-                model = genai.GenerativeModel(model_name='gemini-1.5-pro-latest')  # Initialize Gemini Model
+                model_chatbot = genai.GenerativeModel(model_name='gemini-1.5-pro-latest')  # Model terpisah untuk chatbot
                 general_chatbot_prompt = (
                     f"""
                     Kamu adalah seorang data analyst dan business intelligence handal dan profesional. Tugas kamu adalah menjawab pertanyaan dari user terkait hasil interpretasi pada. Gunakan bahasa yang lumayan santai, mudah dipahami, beginner hingga expert friendly, dan tetap bercirikhas bisnis.
@@ -189,7 +182,7 @@ if data is not None and selected_sheet:
                     Berikan judul yang sesuai dengan topik dan juga 1 emoji di depan judul yang sesuai dengan yang Kamu interpretasikan supaya user UMKM paham akan data yang dibahas.
                     """
                 )
-                response = model.generate_content(f"Prompt: {general_chatbot_prompt}\nPertanyaan: {user_question}\nData: {st.session_state.interpretation_text}")
+                response = model_chatbot.generate_content(f"Prompt: {general_chatbot_prompt}\nPertanyaan: {user_question}\nData: {st.session_state['interpretation_text']}")
 
                 chatbot_response = response.text
 
