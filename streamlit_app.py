@@ -167,8 +167,11 @@ if data is not None and selected_sheet:
 
                 # Display the response as typing effect
                 st.write("#### Jawaban Chatbot:")
-                for i in range(1, len(chatbot_response) + 1):
-                    st.text_area("Gemini:", value=chatbot_response[:i], height=200, key=f"response-{i}")
+                typing_response = ""
+                typing_box = st.empty()
+                for i in range(len(chatbot_response)):
+                    typing_response += chatbot_response[i]
+                    typing_box.text_area("Gemini:", value=typing_response, height=200)
                     time.sleep(0.05)  # Adjust the speed of typing effect
 
 # End of Streamlit app
