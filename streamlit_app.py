@@ -116,56 +116,53 @@ if data is not None and selected_sheet:
         # Initialize variables for storing charts and interpretation
         charts = []
         interpretation = ""
-        visualization_done = False
 
-        # Function to display charts one by one
-        def display_charts():
-            global visualization_done
-            if not visualization_done:
-                # Call appropriate visualization function based on the selected sheet
-                if selected_sheet == 'Pelanggan':
-                    charts, interpretation = visualize_pelanggan(sheet_data, selected_business_info, model)
-                elif selected_sheet == 'Produk':
-                    charts, interpretation = visualize_produk(sheet_data, selected_business_info, model)
-                elif selected_sheet == 'Transaksi Penjualan':
-                    charts, interpretation = visualize_transaksi_penjualan(sheet_data, selected_business_info, model)
-                elif selected_sheet == 'Lokasi Penjualan':
-                    charts, interpretation = visualize_lokasi_penjualan(sheet_data, selected_business_info, model)
-                elif selected_sheet == 'Staf Penjualan':
-                    charts, interpretation = visualize_staf_penjualan(sheet_data, selected_business_info, model)
-                elif selected_sheet == 'Inventaris':
-                    charts, interpretation = visualize_inventaris(sheet_data, selected_business_info, model)
-                elif selected_sheet == 'Promosi dan Pemasaran':
-                    charts, interpretation = visualize_promosi_pemasaran(sheet_data, selected_business_info, model)
-                elif selected_sheet == 'Feedback dan Pengembalian':
-                    charts, interpretation = visualize_feedback_pengembalian(sheet_data, selected_business_info, model)
-                elif selected_sheet == 'Analisis Penjualan':
-                    charts, interpretation = visualize_analisis_penjualan(sheet_data, selected_business_info, model)
-                elif selected_sheet == 'Lainnya':
-                    charts, interpretation = visualize_lainnya(sheet_data, selected_business_info, model)
+        # Define a function to display charts one by one
+        def display_charts_one_by_one():
+            nonlocal charts  # Reference the outer variable
+            nonlocal interpretation  # Reference the outer variable
+            # Call appropriate visualization function based on the selected sheet
+            if selected_sheet == 'Pelanggan':
+                charts, interpretation = visualize_pelanggan(sheet_data, selected_business_info, model)
+            elif selected_sheet == 'Produk':
+                charts, interpretation = visualize_produk(sheet_data, selected_business_info, model)
+            elif selected_sheet == 'Transaksi Penjualan':
+                charts, interpretation = visualize_transaksi_penjualan(sheet_data, selected_business_info, model)
+            elif selected_sheet == 'Lokasi Penjualan':
+                charts, interpretation = visualize_lokasi_penjualan(sheet_data, selected_business_info, model)
+            elif selected_sheet == 'Staf Penjualan':
+                charts, interpretation = visualize_staf_penjualan(sheet_data, selected_business_info, model)
+            elif selected_sheet == 'Inventaris':
+                charts, interpretation = visualize_inventaris(sheet_data, selected_business_info, model)
+            elif selected_sheet == 'Promosi dan Pemasaran':
+                charts, interpretation = visualize_promosi_pemasaran(sheet_data, selected_business_info, model)
+            elif selected_sheet == 'Feedback dan Pengembalian':
+                charts, interpretation = visualize_feedback_pengembalian(sheet_data, selected_business_info, model)
+            elif selected_sheet == 'Analisis Penjualan':
+                charts, interpretation = visualize_analisis_penjualan(sheet_data, selected_business_info, model)
+            elif selected_sheet == 'Lainnya':
+                charts, interpretation = visualize_lainnya(sheet_data, selected_business_info, model)
 
-                # Display all the relevant charts one by one
-                for i, chart in enumerate(charts):
-                    figure = chart.get('figure')
-                    try:
-                        st.plotly_chart(figure)
-                        time.sleep(1)  # Jeda antar chart
-                    except Exception as e:
-                        st.write(f"### Error: Could not display Plotly figure. Error: {e}")
+            # Display all the relevant charts one by one
+            for i, chart in enumerate(charts):
+                figure = chart.get('figure')
+                try:
+                    st.plotly_chart(figure)
+                    time.sleep(1)  # Jeda antar chart
+                except Exception as e:
+                    st.write(f"### Error: Could not display Plotly figure. Error: {e}")
 
-                # Save interpretation in a variable
-                st.session_state['interpretation_text'] = interpretation
+        # Call the function to display charts
+        display_charts_one_by_one()
 
-                # Mark visualization as done
-                visualization_done = True
-
-        # Run the display_charts function
-        display_charts()
-
-        if visualization_done:
-            # Display interpretation after all charts are shown
-            interpretation_text = st.session_state['interpretation_text']
-            st.markdown(interpretation_text)
+        # After all charts are displayed, start the interpretation
+        if interpretation:
+            interpretation_text = ""
+            interpretation_box = st.empty()
+            for i in range(len(interpretation)):
+                interpretation_text += interpretation[i]
+                interpretation_box.markdown(interpretation_text)
+                time.sleep(0.01)  # Adjust the speed of typing effect
 
         # Create a container for the chatbot section that appears after interpretation
         st.markdown("---")
@@ -177,7 +174,7 @@ if data is not None and selected_sheet:
 
         if user_question:
             try:
-                response = model.generate_content(f"Pertanyaan: {user_question}\nData: {st.session_state['interpretation_text']}")
+                response = model.generate_content(f"Pertanyaan: {user_question}\nData: {interpretation_text}")
                 chatbot_response = response.text
 
                 # Display the response as typing effect
