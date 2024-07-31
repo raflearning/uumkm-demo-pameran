@@ -174,8 +174,8 @@ if data is not None and selected_sheet:
         st.write("### 💬Chatbot AI")
         st.write("Kamu masih punya pertanyaan terkait hasil visualisasinya? Tanyakan di bawah ya!")
 
-        # Input box for user questions without subtitle
-        user_question = st.text_input(placeholder="Ajukan pertanyaan kamu di sini...")
+        # Input box for user questions
+        user_question = st.text_input("Ajukan pertanyaan kamu di sini...")
 
         if user_question:
             try:
@@ -203,5 +203,3 @@ if data is not None and selected_sheet:
                     time.sleep(0.005)  # Adjust the speed of typing effect
             except Exception as e:
                 st.write(f"### Error: {e}")
-
-# End of Streamlit app
