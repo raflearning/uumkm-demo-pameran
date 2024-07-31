@@ -169,38 +169,39 @@ if data is not None and selected_sheet:
                 time.sleep(0.005)  # Adjust the speed of typing effect
 
     # Create a container for the chatbot section that appears after interpretation
-    # Create a container for the chatbot section that appears after interpretation
-with st.container():
-    st.markdown("---")
-    st.write("### 💬Chatbot AI")
-    st.write("Kamu masih punya pertanyaan terkait hasil visualisasinya? Tanyakan di bawah ya!")
+    with st.container():
+        st.markdown("---")
+        st.write("### 💬Chatbot AI")
+        st.write("Kamu masih punya pertanyaan terkait hasil visualisasinya? Tanyakan di bawah ya!")
 
-    # Input box for user questions without subtitle
-    user_question = st.text_input("Ajukan pertanyaan kamu di sini...")
+        # Input box for user questions without subtitle
+        user_question = st.text_input(placeholder="Ajukan pertanyaan kamu di sini...")
 
-    if user_question:
-        try:
-            model_chatbot = genai.GenerativeModel(model_name='gemini-1.5-pro-latest')  # Initialize Gemini Model
-            general_chatbot_prompt = (
-                f"""
-                Kamu adalah seorang data analyst dan business intelligence handal dan profesional. Tugas kamu adalah menjawab pertanyaan dari user terkait hasil interpretasi pada. Gunakan bahasa yang lumayan santai, mudah dipahami, beginner hingga expert friendly, dan tetap bercirikhas bisnis.
-                Interpretasikan secara spesifik dan mendalam dalam konteks bisnis yang sesuai dan memberikan rekomendasi yang dapat membangun bisnis untuk ke depannya.
-                Perhatikan chart dengan detail, jelaskan data-datanya, dan sampaikan semua informasi yang bermanfaat kepada pelaku UMKM.
-                Tekankan kalimat atau kata yang penting dengan **bold**/underline/italic. Buatkan poin-poin atau tabel jika perlu.
-                Berikan judul yang sesuai dengan topik dan juga 1 emoji di depan judul yang sesuai dengan yang Kamu interpretasikan supaya user UMKM paham akan data yang dibahas.
-                """
-            )
-            response = model_chatbot.generate_content(f"Prompt: {general_chatbot_prompt}\nPertanyaan: {user_question}\nData: {st.session_state.interpretation_text}")
+        if user_question:
+            try:
+                model = genai.GenerativeModel(model_name='gemini-1.5-pro-latest')  # Initialize Gemini Model
+                general_chatbot_prompt = (
+                    f"""
+                    Kamu adalah seorang data analyst dan business intelligence handal dan profesional. Tugas kamu adalah menjawab pertanyaan dari user terkait hasil interpretasi pada. Gunakan bahasa yang lumayan santai, mudah dipahami, beginner hingga expert friendly, dan tetap bercirikhas bisnis.
+                    Interpretasikan secara spesifik dan mendalam dalam konteks bisnis yang sesuai dan memberikan rekomendasi yang dapat membangun bisnis untuk ke depannya.
+                    Perhatikan chart dengan detail, jelaskan data-datanya, dan sampaikan semua informasi yang bermanfaat kepada pelaku UMKM.
+                    Tekankan kalimat atau kata yang penting dengan **bold**/underline/italic. Buatkan poin-poin atau tabel jika perlu.
+                    Berikan judul yang sesuai dengan topik dan juga 1 emoji di depan judul yang sesuai dengan yang Kamu interpretasikan supaya user UMKM paham akan data yang dibahas.
+                    """
+                )
+                response = model.generate_content(f"Prompt: {general_chatbot_prompt}\nPertanyaan: {user_question}\nData: {st.session_state.interpretation_text}")
 
-            chatbot_response = response.text
+                chatbot_response = response.text
 
-            # Display the response as typing effect
-            st.write("#### Jawaban Chatbot:")
-            typing_response = ""
-            typing_box = st.empty()
-            for i in range(len(chatbot_response)):
-                typing_response += chatbot_response[i]
-                typing_box.markdown(typing_response)
-                time.sleep(0.005)  # Adjust the speed of typing effect
-        except Exception as e:
-            st.write(f"### Error: {e}")
+                # Display the response as typing effect
+                st.write("#### Jawaban Chatbot:")
+                typing_response = ""
+                typing_box = st.empty()
+                for i in range(len(chatbot_response)):
+                    typing_response += chatbot_response[i]
+                    typing_box.markdown(typing_response)
+                    time.sleep(0.005)  # Adjust the speed of typing effect
+            except Exception as e:
+                st.write(f"### Error: {e}")
+
+# End of Streamlit app
