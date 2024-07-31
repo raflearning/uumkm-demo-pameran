@@ -119,7 +119,7 @@ if data is not None and selected_sheet:
         if 'interpretation_text' not in st.session_state:
             st.session_state['interpretation_text'] = ""
 
-        if not st.session_state['charts']:
+        if not st.session_state['charts'] and not st.session_state['interpretation_text']:
             # Call appropriate visualization function based on the selected sheet
             if selected_sheet == 'Pelanggan':
                 charts, interpretation = visualize_pelanggan(sheet_data, selected_business_info, model)
@@ -157,12 +157,9 @@ if data is not None and selected_sheet:
                     st.write(f"### Error: Could not display Plotly figure. Error: {e}")
 
             # Display interpretation after the charts
-            interpretation_text = ""
+            interpretation_text = st.session_state['interpretation_text']
             interpretation_box = st.empty()
-            for i in range(len(st.session_state['interpretation_text'])):
-                interpretation_text += st.session_state['interpretation_text'][i]
-                interpretation_box.markdown(interpretation_text)
-                time.sleep(0.005)  # Adjust the speed of typing effect
+            interpretation_box.markdown(interpretation_text)
 
         # Create a container for the chatbot section that appears after interpretation
         with st.container():
