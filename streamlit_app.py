@@ -113,11 +113,14 @@ if data is not None and selected_sheet:
     selected_business_info = st.selectbox("", business_options)
 
     if selected_business_info:
-        # Initialize variables for storing charts and interpretation
-        if 'charts' not in st.session_state:
+        # Reset charts and interpretation when new business info is selected
+        if 'last_selected_business_info' not in st.session_state:
+            st.session_state['last_selected_business_info'] = ""
+        
+        if st.session_state['last_selected_business_info'] != selected_business_info:
             st.session_state['charts'] = []
-        if 'interpretation_text' not in st.session_state:
             st.session_state['interpretation_text'] = ""
+            st.session_state['last_selected_business_info'] = selected_business_info
 
         if not st.session_state['charts'] and not st.session_state['interpretation_text']:
             # Call appropriate visualization function based on the selected sheet
