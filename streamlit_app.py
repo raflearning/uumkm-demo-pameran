@@ -11,8 +11,6 @@ from vis_interpret import (
     visualize_analisis_penjualan, visualize_lainnya
 )
 
-load_dotenv()
-
 st.title("🚀Pantau Kinerja Bisnis Kamu!")
 st.write(
     "Memudahkan kamu untuk mengambil informasi bisnis dan rekomendasi pengambilan keputusan dengan Artificial Intelligence!"
@@ -22,7 +20,7 @@ st.write(
 st.markdown("---")
 
 # Ambil API key dari variabel lingkungan
-API_KEY = os.getenv('API_KEY')
+API_KEY = st.secrets["general"]["API_KEY"]
 genai.configure(api_key=API_KEY)
 
 # Function to load data from all sheets
