@@ -22,7 +22,7 @@ st.markdown("---")
 # Ambil API key dari variabel lingkungan
 API_KEY = st.secrets["general"]["API_KEY"]
 genai.configure(api_key=API_KEY)
-model = genai.GenerativeModel(model_name='gemini-1.5-pro-latest')  # Model untuk interpretasi dan chatbot
+model = genai.GenerativeModel(model_name='gemini-1.5-flash')  # Model untuk interpretasi dan chatbot
 
 # Function to load data from all sheets
 def load_data(uploaded_file):
