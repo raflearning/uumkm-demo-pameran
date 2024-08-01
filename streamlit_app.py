@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import time
 import google.generativeai as genai
-from google.api_core.exceptions import InternalServerError, InvalidArgument
+from google.api_core.exceptions import InternalServerError
 from dotenv import load_dotenv
 from vis_interpret import (
     visualize_pelanggan, visualize_produk, visualize_transaksi_penjualan, 
@@ -100,101 +100,120 @@ else:
     st.sidebar.warning("Silakan unggah file Excel untuk melanjutkan.")
     sheet_names = []
 
+# Session state to manage selected options and results
+if 'visualization_results' not in st.session_state:
+    st.session_state.visualization_results = None
+if 'interpretation_text' not in st.session_state:
+    st.session_state.interpretation_text = None
+if 'charts' not in st.session_state:
+    st.session_state.charts = None
+
 # Navigation bar to select sheet
-selected_sheet = st.sidebar.selectbox("Pilih Kategori Data", sheet_names)
+selected_sheet = st.sidebar.selectbox("Pilih Kategori Data", [""] + sheet_names)
 
 if data is not None and selected_sheet:
-    st.write(f"### 📶Dashboard Analitik - {selected_sheet}")
-    sheet_data = data[selected_sheet]
-    st.write("##### Data yang Diunggah")
-    st.dataframe(sheet_data)
+    if selected_sheet != "":
+        st.write(f"### 📶Dashboard Analitik - {selected_sheet}")
+        sheet_data = data[selected_sheet]
+        st.write("##### Data yang Diunggah")
+        st.dataframe(sheet_data)
 
-    st.write("##### 👇Pilih Informasi Bisnis yang Kamu Inginkan")
-    business_options = get_business_options(selected_sheet)
-    selected_business_info = st.selectbox("", business_options)
+        st.write("##### 👇Pilih Informasi Bisnis yang Kamu Inginkan")
+        business_options = get_business_options(selected_sheet)
+        selected_business_info = st.selectbox("", [""] + business_options)
 
-    if selected_business_info:
-        # Function to get visualization and interpretation
-        def get_visualization_and_interpretation(sheet_data, selected_business_info, selected_sheet, model):
-            if selected_sheet == 'Pelanggan':
-                return visualize_pelanggan(sheet_data, selected_business_info, model)
-            elif selected_sheet == 'Produk':
-                return visualize_produk(sheet_data, selected_business_info, model)
-            elif selected_sheet == 'Transaksi Penjualan':
-                return visualize_transaksi_penjualan(sheet_data, selected_business_info, model)
-            elif selected_sheet == 'Lokasi Penjualan':
-                return visualize_lokasi_penjualan(sheet_data, selected_business_info, model)
-            elif selected_sheet == 'Staf Penjualan':
-                return visualize_staf_penjualan(sheet_data, selected_business_info, model)
-            elif selected_sheet == 'Inventaris':
-                return visualize_inventaris(sheet_data, selected_business_info, model)
-            elif selected_sheet == 'Promosi dan Pemasaran':
-                return visualize_promosi_pemasaran(sheet_data, selected_business_info, model)
-            elif selected_sheet == 'Feedback dan Pengembalian':
-                return visualize_feedback_pengembalian(sheet_data, selected_business_info, model)
-            elif selected_sheet == 'Analisis Penjualan':
-                return visualize_analisis_penjualan(sheet_data, selected_business_info, model)
-            elif selected_sheet == 'Lainnya':
-                return visualize_lainnya(sheet_data, selected_business_info, model)
-            else:
-                return [], ""
+        if selected_business_info and selected_business_info != "":
+            # Function to get visualization and interpretation
+            def get_visualization_and_interpretation(sheet_data, selected_business_info, selected_sheet, model):
+                if selected_sheet == 'Pelanggan':
+                    return visualize_pelanggan(sheet_data, selected_business_info, model)
+                elif selected_sheet == 'Produk':
+                    return visualize_produk(sheet_data, selected_business_info, model)
+                elif selected_sheet == 'Transaksi Penjualan':
+                    return visualize_transaksi_penjualan(sheet_data, selected_business_info, model)
+                elif selected_sheet == 'Lokasi Penjualan':
+                    return visualize_lokasi_penjualan(sheet_data, selected_business_info, model)
+                elif selected_sheet == 'Staf Penjualan':
+                    return visualize_staf_penjualan(sheet_data, selected_business_info, model)
+                elif selected_sheet == 'Inventaris':
+                    return visualize_inventaris(sheet_data, selected_business_info, model)
+                elif selected_sheet == 'Promosi dan Pemasaran':
+                    return visualize_promosi_pemasaran(sheet_data, selected_business_info, model)
+                elif selected_sheet == 'Feedback dan Pengembalian':
+                    return visualize_feedback_pengembalian(sheet_data, selected_business_info, model)
+                elif selected_sheet == 'Analisis Penjualan':
+                    return visualize_analisis_penjualan(sheet_data, selected_business_info, model)
+                elif selected_sheet == 'Lainnya':
+                    return visualize_lainnya(sheet_data, selected_business_info, model)
+                else:
+                    return [], ""
 
-        # Get visualization and interpretation
-        try:
-            charts, interpretation = get_visualization_and_interpretation(sheet_data, selected_business_info, selected_sheet, model)
-        except (InternalServerError, InvalidArgument) as e:
-            st.error(f"Terjadi kesalahan pada server atau argumen tidak valid saat mencoba mendapatkan interpretasi: {e}")
-            st.stop()
+            # Get visualization and interpretation
+            try:
+                charts, interpretation = get_visualization_and_interpretation(sheet_data, selected_business_info, selected_sheet, model)
+                st.session_state.charts = charts
+                st.session_state.interpretation_text = interpretation
+            except InternalServerError as e:
+                st.error("Terjadi kesalahan pada server saat mencoba mendapatkan interpretasi. Silakan coba lagi nanti.")
+                st.stop()
 
-        # Function to display charts one by one
-        def display_charts_one_by_one(charts):
-            for chart in charts:
-                figure = chart.get('figure')
-                try:
-                    st.plotly_chart(figure)
-                    time.sleep(1)  # Jeda antar chart
-                except Exception as e:
-                    st.write(f"### Error: Could not display Plotly figure. Error: {e}")
+            # Function to display charts one by one
+            def display_charts(charts):
+                for chart in charts:
+                    figure = chart.get('figure')
+                    try:
+                        st.plotly_chart(figure)
+                    except Exception as e:
+                        st.write(f"### Error: Could not display Plotly figure. Error: {e}")
 
-        # Display charts
-        display_charts_one_by_one(charts)
+            # Display charts
+            display_charts(charts)
 
-        # Function to display interpretation one character at a time
-        def display_interpretation_one_by_one(interpretation):
-            if interpretation:
-                interpretation_text = ""
-                interpretation_box = st.empty()
-                for i in range(len(interpretation)):
-                    interpretation_text += interpretation[i]
-                    interpretation_box.markdown(interpretation_text)
-                    time.sleep(0.01)  # Adjust the speed of typing effect
-                return interpretation_text
-            return ""
+            # Function to display interpretation one character at a time
+            def display_interpretation_one_by_one(interpretation):
+                if interpretation:
+                    interpretation_text = ""
+                    interpretation_box = st.empty()
+                    for i in range(len(interpretation)):
+                        interpretation_text += interpretation[i]
+                        interpretation_box.markdown(interpretation_text)
+                        time.sleep(0.004)  # Adjust the speed of typing effect
+                    return interpretation_text
+                return ""
 
-        # Display interpretation
-        interpretation_text = display_interpretation_one_by_one(interpretation)
-
-        # Create a container for the chatbot section that appears after interpretation
-        if interpretation_text:
+            # Display interpretation
+            st.session_state.interpretation_text = display_interpretation_one_by_one(interpretation)
             st.markdown("---")
-            st.write("### 💬Chatbot AI")
-            st.write("Kamu masih punya pertanyaan terkait hasil visualisasinya? Tanyakan di bawah ya!")
 
-            # Input box for user questions
-            user_question = st.text_input("Ajukan pertanyaan kamu di sini...")
+# Chatbot Section
+if st.session_state.interpretation_text is not None:
+    def chatbot(model):
+        st.write("### 💬Chatbot AI")
+        st.write("Kamu masih punya pertanyaan terkait hasil visualisasinya? Tanyakan di bawah ya!")
 
-            if user_question:
-                try:
-                    response = model.generate_content(f"Pertanyaan: {user_question}\nData: {interpretation_text}")
-                    chatbot_response = response.text
+        # Input box for user questions
+        user_question = st.text_input("Ajukan pertanyaan kamu di sini...")
 
-                    # Display the response as typing effect
-                    st.write("#### Jawaban Chatbot:")
-                    typing_response = ""
-                    typing_box = st.empty()
-                    for i in range(len(chatbot_response)):
-                        typing_response += chatbot_response[i]
-                        typing_box.markdown(typing_response)
-                        time.sleep(0.005)  # Adjust the speed of typing effect
-                except Exception as e:
-                    st.write(f"### Error: {e}")
+        if user_question:
+            try:
+                response = model.generate_content(
+                    f"Pertanyaan: {user_question}\n"
+                    f"Chart yang telah divisualkan: {st.session_state.charts}\n"
+                    f"Hasil interpretasi: {st.session_state.interpretation_text}\n"
+                    "Jawab dalam konteks bisnis."
+                )
+                chatbot_response = response.text
+
+                # Display the response as typing effect
+                st.write("#### Jawaban Chatbot:")
+                typing_response = ""
+                typing_box = st.empty()
+                for i in range(len(chatbot_response)):
+                    typing_response += chatbot_response[i]
+                    typing_box.markdown(typing_response)
+                    time.sleep(0.004)  # Adjust the speed of typing effect
+            except Exception as e:
+                st.write(f"### Error: {e}")
+
+    # Display chatbot
+    chatbot(model)
