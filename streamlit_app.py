@@ -143,7 +143,7 @@ if data is not None and selected_sheet:
         try:
             charts, interpretation = get_visualization_and_interpretation(sheet_data, selected_business_info, selected_sheet, model)
         except (InternalServerError, InvalidArgument) as e:
-            st.error("Terjadi kesalahan pada server atau argumen tidak valid saat mencoba mendapatkan interpretasi. Silakan coba lagi nanti.")
+            st.error(f"Terjadi kesalahan pada server atau argumen tidak valid saat mencoba mendapatkan interpretasi: {e}")
             st.stop()
 
         # Function to display charts one by one
