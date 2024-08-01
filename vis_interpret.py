@@ -2,7 +2,9 @@ from io import BytesIO
 from PIL import Image
 import plotly.express as px
 import pandas as pd
+import random
 
+# Function to save Plotly figure as an image and load it using PIL
 def fig_to_pil_image(fig):
     buf = BytesIO()
     fig.write_image(buf, format='png')
@@ -10,32 +12,31 @@ def fig_to_pil_image(fig):
     image = Image.open(buf)
     return image
 
+# Function to interpret chart data using Gemini
 def interpret_chart(sheet_name, charts, model):
-    interpretations = []
-    
-    for chart in charts:
-        general_prompt = (
-            f"""
-            Kamu adalah seorang data analyst dan business intelligence handal dan profesional. Tugas Kamu adalah menginterpretasikan data 
-            penjualan UMKM dari sheet {sheet_name}. Gunakan bahasa yang lumayan santai, mudah dipahami, beginner hingga expert friendly, dan tetap bercirikhas bisnis.
-            Interpretasikan secara spesifik dan mendalam dalam konteks bisnis yang sesuai dan memberikan rekomendasi yang dapat membangun bisnis untuk ke depannya.
-            Perhatikan chart dengan detail, jelaskan data-datanya, dan sampaikan semua informasi yang bermanfaat kepada pelaku UMKM.
-            Tekankan kalimat atau kata yang penting dengan bold/underline/italic, sesuaikan saja. Buatkan poin-poin atau tabel jika perlu.
-            Setiap chart yang Kamu interpretasikan, berikan judul dengan ukuran font yang lebih besar yang sesuai dengan nama data dan juga 1 emoji di depan judul yang sesuai dengan yang Kamu interpretasikan supaya user UMKM paham akan data yang dibahas.
+    general_prompt = (
+        f"""
+        Kamu adalah seorang data analyst dan business intelligence handal dan profesional. Tugas Kamu adalah menginterpretasikan data 
+        penjualan UMKM dari sheet {sheet_name}. Gunakan bahasa yang lumayan santai, mudah dipahami, beginner hingga expert friendly, dan tetap bercirikhas bisnis.
+        Interpretasikan secara spesifik dan mendalam dalam konteks bisnis yang sesuai dan memberikan rekomendasi yang dapat membangun bisnis untuk ke depannya.
+        Perhatikan chart dengan detail, jelaskan data-datanya, dan sampaikan semua informasi yang bermanfaat kepada pelaku UMKM.
+        Tekankan kalimat atau kata yang penting dengan bold/underline/italic, sesuaikan saja. Buatkan poin-poin atau tabel jika perlu.
+        Setiap chart yang Kamu interpretasikan, berikan judul dengan ukuran dont yang lebih besar yang sesuai dengan nama data dan juga 1 emoji di depan judul yang sesuai dengan yang Kamu interpretasikan supaya user UMKM paham akan data yang dibahas.
 
-            Berikut adalah visualisasi yang tersedia:
-            """
-        )
-        
+        Berikut adalah visualisasi yang tersedia:
+        """
+    )
+    
+    chart_prompts = []
+    for chart in charts:
         chart_image = fig_to_pil_image(chart['figure'])
         chart_prompt = f"Tipe Visualisasi: {chart['type']}. Interpretasikan data berikut:"
         combined_prompt = f"{general_prompt}\n{chart_prompt}"
         response = model.generate_content([combined_prompt, chart_image])
         chart_description = response.text.strip()
-        interpretations.append(chart_description)
+        chart_prompts.append(chart_description)
     
-    return "\n\n".join(interpretations)
-
+    return "\n\n".join(chart_prompts)
 
 def convert_to_date(df, columns):
     for col in columns:
