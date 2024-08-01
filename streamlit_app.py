@@ -22,7 +22,7 @@ st.markdown("---")
 # Load API key from environment variable
 API_KEY = st.secrets["general"]["API_KEY"]
 genai.configure(api_key=API_KEY)
-model = genai.GenerativeModel(model_name='gemini-1.5-pro-latest')
+model = genai.GenerativeModel(model_name='gemini-1.5-pro-latest')  # Model untuk interpretasi dan chatbot
 
 # Function to load data from all sheets
 def load_data(uploaded_file):
@@ -115,6 +115,8 @@ if data is not None and selected_sheet:
         selected_business_info = st.selectbox("", [""] + business_options)
 
         if selected_business_info and selected_business_info != "":
+            # Get visualization and interpretation
+            charts, interpretation = [], ""
             try:
                 if selected_sheet == 'Pelanggan':
                     charts, interpretation = visualize_pelanggan(sheet_data, selected_business_info, model)
@@ -136,20 +138,24 @@ if data is not None and selected_sheet:
                     charts, interpretation = visualize_analisis_penjualan(sheet_data, selected_business_info, model)
                 elif selected_sheet == 'Lainnya':
                     charts, interpretation = visualize_lainnya(sheet_data, selected_business_info, model)
-                else:
-                    charts, interpretation = [], ""
-
-                for chart in charts:
-                    figure = chart.get('figure')
-                    st.plotly_chart(figure)
-
-                interpretation_text = ""
-                for i in range(len(interpretation)):
-                    interpretation_text += interpretation[i]
-                    st.markdown(interpretation_text)
-                    time.sleep(0.004)
-
-            except InternalServerError:
+            except InternalServerError as e:
                 st.error("Terjadi kesalahan pada server saat mencoba mendapatkan interpretasi. Silakan coba lagi nanti.")
-            except Exception as e:
-                st.error(f"Terjadi kesalahan: {e}")
+                st.stop()
+
+            # Display charts
+            for chart in charts:
+                figure = chart.get('figure')
+                try:
+                    st.plotly_chart(figure)
+                except Exception as e:
+                    st.write(f"### Error: Could not display Plotly figure. Error: {e}")
+
+            # Display interpretation with typing effect
+            interpretation_text = ""
+            interpretation_box = st.empty()
+            for i in range(len(interpretation)):
+                interpretation_text += interpretation[i]
+                interpretation_box.markdown(interpretation_text)
+                time.sleep(0.004)  # Adjust the speed of typing effect
+
+            st.markdown("---")
