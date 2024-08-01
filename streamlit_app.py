@@ -11,6 +11,8 @@ from vis_interpret import (
     visualize_analisis_penjualan, visualize_lainnya
 )
 
+load_dotenv()
+
 st.title("🚀Pantau Kinerja Bisnis Kamu!")
 st.write(
     "Memudahkan kamu untuk mengambil informasi bisnis dan rekomendasi pengambilan keputusan dengan Artificial Intelligence!"
