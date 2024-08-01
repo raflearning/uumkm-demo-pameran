@@ -101,8 +101,6 @@ else:
     sheet_names = []
 
 # Initialize session state for storing results
-if 'visualization_results' not in st.session_state:
-    st.session_state.visualization_results = None
 if 'charts' not in st.session_state:
     st.session_state.charts = None
 if 'interpretation_text' not in st.session_state:
@@ -149,12 +147,11 @@ if data is not None and selected_sheet:
                     return [], ""
 
             # Get visualization and interpretation only if not already done
-            if st.session_state.visualization_results is None:
+            if st.session_state.charts is None or st.session_state.interpretation_text is None:
                 try:
                     charts, interpretation = get_visualization_and_interpretation(sheet_data, selected_business_info, selected_sheet, model)
                     st.session_state.charts = charts
                     st.session_state.interpretation_text = interpretation
-                    st.session_state.visualization_results = (charts, interpretation)
                 except InternalServerError as e:
                     st.error("Terjadi kesalahan pada server saat mencoba mendapatkan interpretasi. Silakan coba lagi nanti.")
                     st.stop()
@@ -170,7 +167,7 @@ if data is not None and selected_sheet:
 
             display_charts(st.session_state.charts)
 
-            # Display interpretation
+            # Function to display interpretation one character at a time
             def display_interpretation_one_by_one(interpretation):
                 if interpretation:
                     interpretation_text = ""
@@ -182,7 +179,7 @@ if data is not None and selected_sheet:
                     return interpretation_text
                 return ""
 
-            st.session_state.interpretation_text = display_interpretation_one_by_one(st.session_state.interpretation_text)
+            st.markdown(display_interpretation_one_by_one(st.session_state.interpretation_text))
             st.markdown("---")
 
 # Chatbot Section
