@@ -105,6 +105,18 @@ else:
 # Navigation bar to select sheet
 selected_sheet = st.sidebar.selectbox("Pilih Kategori Data", [""] + sheet_names)
 
+# Reset stored data when a new selection is made
+if 'last_selected_sheet' not in st.session_state:
+    st.session_state.last_selected_sheet = ""
+if 'last_selected_info' not in st.session_state:
+    st.session_state.last_selected_info = ""
+
+if st.session_state.last_selected_sheet != selected_sheet:
+    st.session_state.last_selected_sheet = selected_sheet
+    st.session_state.last_selected_info = ""
+    st.session_state.charts = None
+    st.session_state.interpretation_text = ""
+
 if data is not None and selected_sheet:
     if selected_sheet != "":
         st.write(f"### 📶Dashboard Analitik - {selected_sheet}")
@@ -116,47 +128,58 @@ if data is not None and selected_sheet:
         business_options = get_business_options(selected_sheet)
         selected_business_info = st.selectbox("", [""] + business_options)
 
+        # Reset interpretation and charts when a new business info is selected
+        if st.session_state.last_selected_info != selected_business_info:
+            st.session_state.last_selected_info = selected_business_info
+            st.session_state.charts = None
+            st.session_state.interpretation_text = ""
+
         if selected_business_info and selected_business_info != "":
-            # Get visualization and interpretation
-            charts, interpretation = [], ""
-            try:
-                if selected_sheet == 'Pelanggan':
-                    charts, interpretation = visualize_pelanggan(sheet_data, selected_business_info, model)
-                elif selected_sheet == 'Produk':
-                    charts, interpretation = visualize_produk(sheet_data, selected_business_info, model)
-                elif selected_sheet == 'Transaksi Penjualan':
-                    charts, interpretation = visualize_transaksi_penjualan(sheet_data, selected_business_info, model)
-                elif selected_sheet == 'Lokasi Penjualan':
-                    charts, interpretation = visualize_lokasi_penjualan(sheet_data, selected_business_info, model)
-                elif selected_sheet == 'Staf Penjualan':
-                    charts, interpretation = visualize_staf_penjualan(sheet_data, selected_business_info, model)
-                elif selected_sheet == 'Inventaris':
-                    charts, interpretation = visualize_inventaris(sheet_data, selected_business_info, model)
-                elif selected_sheet == 'Promosi dan Pemasaran':
-                    charts, interpretation = visualize_promosi_pemasaran(sheet_data, selected_business_info, model)
-                elif selected_sheet == 'Feedback dan Pengembalian':
-                    charts, interpretation = visualize_feedback_pengembalian(sheet_data, selected_business_info, model)
-                elif selected_sheet == 'Analisis Penjualan':
-                    charts, interpretation = visualize_analisis_penjualan(sheet_data, selected_business_info, model)
-                elif selected_sheet == 'Lainnya':
-                    charts, interpretation = visualize_lainnya(sheet_data, selected_business_info, model)
-            except InternalServerError as e:
-                st.error("Terjadi kesalahan pada server saat mencoba mendapatkan interpretasi. Silakan coba lagi nanti.")
-                st.stop()
+            # Get visualization and interpretation only if not already done
+            if st.session_state.charts is None or st.session_state.interpretation_text is None:
+                try:
+                    if selected_sheet == 'Pelanggan':
+                        charts, interpretation = visualize_pelanggan(sheet_data, selected_business_info, model)
+                    elif selected_sheet == 'Produk':
+                        charts, interpretation = visualize_produk(sheet_data, selected_business_info, model)
+                    elif selected_sheet == 'Transaksi Penjualan':
+                        charts, interpretation = visualize_transaksi_penjualan(sheet_data, selected_business_info, model)
+                    elif selected_sheet == 'Lokasi Penjualan':
+                        charts, interpretation = visualize_lokasi_penjualan(sheet_data, selected_business_info, model)
+                    elif selected_sheet == 'Staf Penjualan':
+                        charts, interpretation = visualize_staf_penjualan(sheet_data, selected_business_info, model)
+                    elif selected_sheet == 'Inventaris':
+                        charts, interpretation = visualize_inventaris(sheet_data, selected_business_info, model)
+                    elif selected_sheet == 'Promosi dan Pemasaran':
+                        charts, interpretation = visualize_promosi_pemasaran(sheet_data, selected_business_info, model)
+                    elif selected_sheet == 'Feedback dan Pengembalian':
+                        charts, interpretation = visualize_feedback_pengembalian(sheet_data, selected_business_info, model)
+                    elif selected_sheet == 'Analisis Penjualan':
+                        charts, interpretation = visualize_analisis_penjualan(sheet_data, selected_business_info, model)
+                    elif selected_sheet == 'Lainnya':
+                        charts, interpretation = visualize_lainnya(sheet_data, selected_business_info, model)
+                    
+                    st.session_state.charts = charts
+                    st.session_state.interpretation_text = interpretation
+
+                except InternalServerError as e:
+                    st.error("Terjadi kesalahan pada server saat mencoba mendapatkan interpretasi. Silakan coba lagi nanti.")
+                    st.stop()
 
             # Display charts
-            for chart in charts:
-                figure = chart.get('figure')
-                try:
-                    st.plotly_chart(figure)
-                except Exception as e:
-                    st.write(f"### Error: Could not display Plotly figure. Error: {e}")
+            if st.session_state.charts:
+                for chart in st.session_state.charts:
+                    figure = chart.get('figure')
+                    try:
+                        st.plotly_chart(figure)
+                    except Exception as e:
+                        st.write(f"### Error: Could not display Plotly figure. Error: {e}")
 
             # Display interpretation with typing effect
             interpretation_text = ""
             interpretation_box = st.empty()
-            for i in range(len(interpretation)):
-                interpretation_text += interpretation[i]
+            for i in range(len(st.session_state.interpretation_text)):
+                interpretation_text += st.session_state.interpretation_text[i]
                 interpretation_box.markdown(interpretation_text)
                 time.sleep(0.004)  # Adjust the speed of typing effect
 
