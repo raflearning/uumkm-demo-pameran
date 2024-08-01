@@ -167,7 +167,7 @@ if data is not None and selected_sheet:
                     for i in range(len(interpretation)):
                         interpretation_text += interpretation[i]
                         interpretation_box.markdown(interpretation_text)
-                        time.sleep(0.005)  # Adjust the speed of typing effect
+                        time.sleep(0.004)  # Adjust the speed of typing effect
                     return interpretation_text
                 return ""
 
@@ -176,7 +176,7 @@ if data is not None and selected_sheet:
             st.markdown("---")
 
             # Create a container for the chatbot section that appears after interpretation
-            def chatbot(charts, interpretation_text, model):
+            def chatbot(charts, interpretation_text, model_chatbot):
                 if interpretation_text:
                     st.write("### 💬Chatbot AI")
                     st.write("Kamu masih punya pertanyaan terkait hasil visualisasinya? Tanyakan di bawah ya!")
@@ -186,7 +186,7 @@ if data is not None and selected_sheet:
 
                     if user_question:
                         try:
-                            response = model.generate_content(
+                            response = model_chatbot.generate_content(
                                 f"Pertanyaan: {user_question}\n"
                                 f"Chart yang telah divisualkan: {charts}\n"
                                 f"Hasil interpretasi: {interpretation_text}\n"
@@ -201,9 +201,9 @@ if data is not None and selected_sheet:
                             for i in range(len(chatbot_response)):
                                 typing_response += chatbot_response[i]
                                 typing_box.markdown(typing_response)
-                                time.sleep(0.005)  # Adjust the speed of typing effect
+                                time.sleep(0.004)  # Adjust the speed of typing effect
                         except Exception as e:
                             st.write(f"### Error: {e}")
 
             # Display chatbot
-            chatbot(charts, interpretation_text, model)
+            chatbot(charts, interpretation_text, model_chatbot)
