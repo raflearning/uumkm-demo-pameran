@@ -22,7 +22,7 @@ st.markdown("---")
 # Load API key from environment variable
 API_KEY = st.secrets["general"]["API_KEY"]
 genai.configure(api_key=API_KEY)
-model = genai.GenerativeModel(model_name='gemini-1.5-pro-latest')  # Model untuk interpretasi dan chatbot
+model = genai.GenerativeModel(model_name='gemini-1.5-pro-latest')
 
 # Function to load data from all sheets
 def load_data(uploaded_file):
@@ -100,12 +100,6 @@ else:
     st.sidebar.warning("Silakan unggah file Excel untuk melanjutkan.")
     sheet_names = []
 
-# Initialize session state for storing results
-if 'charts' not in st.session_state:
-    st.session_state.charts = None
-if 'interpretation_text' not in st.session_state:
-    st.session_state.interpretation_text = None
-
 # Navigation bar to select sheet
 selected_sheet = st.sidebar.selectbox("Pilih Kategori Data", [""] + sheet_names)
 
@@ -121,65 +115,41 @@ if data is not None and selected_sheet:
         selected_business_info = st.selectbox("", [""] + business_options)
 
         if selected_business_info and selected_business_info != "":
-            # Function to get visualization and interpretation
-            def get_visualization_and_interpretation(sheet_data, selected_business_info, selected_sheet, model):
+            try:
                 if selected_sheet == 'Pelanggan':
-                    return visualize_pelanggan(sheet_data, selected_business_info, model)
+                    charts, interpretation = visualize_pelanggan(sheet_data, selected_business_info, model)
                 elif selected_sheet == 'Produk':
-                    return visualize_produk(sheet_data, selected_business_info, model)
+                    charts, interpretation = visualize_produk(sheet_data, selected_business_info, model)
                 elif selected_sheet == 'Transaksi Penjualan':
-                    return visualize_transaksi_penjualan(sheet_data, selected_business_info, model)
+                    charts, interpretation = visualize_transaksi_penjualan(sheet_data, selected_business_info, model)
                 elif selected_sheet == 'Lokasi Penjualan':
-                    return visualize_lokasi_penjualan(sheet_data, selected_business_info, model)
+                    charts, interpretation = visualize_lokasi_penjualan(sheet_data, selected_business_info, model)
                 elif selected_sheet == 'Staf Penjualan':
-                    return visualize_staf_penjualan(sheet_data, selected_business_info, model)
+                    charts, interpretation = visualize_staf_penjualan(sheet_data, selected_business_info, model)
                 elif selected_sheet == 'Inventaris':
-                    return visualize_inventaris(sheet_data, selected_business_info, model)
+                    charts, interpretation = visualize_inventaris(sheet_data, selected_business_info, model)
                 elif selected_sheet == 'Promosi dan Pemasaran':
-                    return visualize_promosi_pemasaran(sheet_data, selected_business_info, model)
+                    charts, interpretation = visualize_promosi_pemasaran(sheet_data, selected_business_info, model)
                 elif selected_sheet == 'Feedback dan Pengembalian':
-                    return visualize_feedback_pengembalian(sheet_data, selected_business_info, model)
+                    charts, interpretation = visualize_feedback_pengembalian(sheet_data, selected_business_info, model)
                 elif selected_sheet == 'Analisis Penjualan':
-                    return visualize_analisis_penjualan(sheet_data, selected_business_info, model)
+                    charts, interpretation = visualize_analisis_penjualan(sheet_data, selected_business_info, model)
                 elif selected_sheet == 'Lainnya':
-                    return visualize_lainnya(sheet_data, selected_business_info, model)
+                    charts, interpretation = visualize_lainnya(sheet_data, selected_business_info, model)
                 else:
-                    return [], ""
+                    charts, interpretation = [], ""
 
-            # Get visualization and interpretation only if not already done
-            if st.session_state.charts is None or st.session_state.interpretation_text is None:
-                try:
-                    charts, interpretation = get_visualization_and_interpretation(sheet_data, selected_business_info, selected_sheet, model)
-                    st.session_state.charts = charts
-                    st.session_state.interpretation_text = interpretation
-                except InternalServerError as e:
-                    st.error("Terjadi kesalahan pada server saat mencoba mendapatkan interpretasi. Silakan coba lagi nanti.")
-                    st.stop()
-
-            # Display charts
-            def display_charts(charts):
                 for chart in charts:
                     figure = chart.get('figure')
-                    try:
-                        st.plotly_chart(figure)
-                    except Exception as e:
-                        st.write(f"### Error: Could not display Plotly figure. Error: {e}")
+                    st.plotly_chart(figure)
 
-            display_charts(st.session_state.charts)
+                interpretation_text = ""
+                for i in range(len(interpretation)):
+                    interpretation_text += interpretation[i]
+                    st.markdown(interpretation_text)
+                    time.sleep(0.004)
 
-            # Function to display interpretation one character at a time
-            def display_interpretation_one_by_one(interpretation):
-                if interpretation:
-                    interpretation_text = ""
-                    interpretation_box = st.empty()
-                    for i in range(len(interpretation)):
-                        interpretation_text += interpretation[i]
-                        interpretation_box.markdown(interpretation_text)
-                        time.sleep(0.004)  # Adjust the speed of typing effect
-                    return interpretation_text
-                return ""
-
-            # Display interpretation only once
-            if st.session_state.interpretation_text:
-                st.markdown(display_interpretation_one_by_one(st.session_state.interpretation_text))
-            st.markdown("---")
+            except InternalServerError:
+                st.error("Terjadi kesalahan pada server saat mencoba mendapatkan interpretasi. Silakan coba lagi nanti.")
+            except Exception as e:
+                st.error(f"Terjadi kesalahan: {e}")
