@@ -10,36 +10,32 @@ def fig_to_pil_image(fig):
     image = Image.open(buf)
     return image
 
-def interpret_chart(sheet_name, charts, model, existing_interpretations):
+def interpret_chart(sheet_name, charts, model):
     interpretations = []
     
     for chart in charts:
-        if chart['type'] in existing_interpretations:
-            chart_description = existing_interpretations[chart['type']]
-        else:
-            general_prompt = (
-                f"""
-                Kamu adalah seorang data analyst dan business intelligence handal dan profesional. Tugas Kamu adalah menginterpretasikan data 
-                penjualan UMKM dari sheet {sheet_name}. Gunakan bahasa yang lumayan santai, mudah dipahami, beginner hingga expert friendly, dan tetap bercirikhas bisnis.
-                Interpretasikan secara spesifik dan mendalam dalam konteks bisnis yang sesuai dan memberikan rekomendasi yang dapat membangun bisnis untuk ke depannya.
-                Perhatikan chart dengan detail, jelaskan data-datanya, dan sampaikan semua informasi yang bermanfaat kepada pelaku UMKM.
-                Tekankan kalimat atau kata yang penting dengan bold/underline/italic, sesuaikan saja. Buatkan poin-poin atau tabel jika perlu.
-                Setiap chart yang Kamu interpretasikan, berikan judul dengan ukuran font yang lebih besar yang sesuai dengan nama data dan juga 1 emoji di depan judul yang sesuai dengan yang Kamu interpretasikan supaya user UMKM paham akan data yang dibahas.
+        general_prompt = (
+            f"""
+            Kamu adalah seorang data analyst dan business intelligence handal dan profesional. Tugas Kamu adalah menginterpretasikan data 
+            penjualan UMKM dari sheet {sheet_name}. Gunakan bahasa yang lumayan santai, mudah dipahami, beginner hingga expert friendly, dan tetap bercirikhas bisnis.
+            Interpretasikan secara spesifik dan mendalam dalam konteks bisnis yang sesuai dan memberikan rekomendasi yang dapat membangun bisnis untuk ke depannya.
+            Perhatikan chart dengan detail, jelaskan data-datanya, dan sampaikan semua informasi yang bermanfaat kepada pelaku UMKM.
+            Tekankan kalimat atau kata yang penting dengan bold/underline/italic, sesuaikan saja. Buatkan poin-poin atau tabel jika perlu.
+            Setiap chart yang Kamu interpretasikan, berikan judul dengan ukuran font yang lebih besar yang sesuai dengan nama data dan juga 1 emoji di depan judul yang sesuai dengan yang Kamu interpretasikan supaya user UMKM paham akan data yang dibahas.
 
-                Berikut adalah visualisasi yang tersedia:
-                """
-            )
-            
-            chart_image = fig_to_pil_image(chart['figure'])
-            chart_prompt = f"Tipe Visualisasi: {chart['type']}. Interpretasikan data berikut:"
-            combined_prompt = f"{general_prompt}\n{chart_prompt}"
-            response = model.generate_content([combined_prompt, chart_image])
-            chart_description = response.text.strip()
-            existing_interpretations[chart['type']] = chart_description
-
+            Berikut adalah visualisasi yang tersedia:
+            """
+        )
+        
+        chart_image = fig_to_pil_image(chart['figure'])
+        chart_prompt = f"Tipe Visualisasi: {chart['type']}. Interpretasikan data berikut:"
+        combined_prompt = f"{general_prompt}\n{chart_prompt}"
+        response = model.generate_content([combined_prompt, chart_image])
+        chart_description = response.text.strip()
         interpretations.append(chart_description)
     
     return "\n\n".join(interpretations)
+
 
 def convert_to_date(df, columns):
     for col in columns:
@@ -47,7 +43,7 @@ def convert_to_date(df, columns):
             df[col] = pd.to_datetime(df[col], errors='coerce')
     return df
 
-def visualize_pelanggan(df, selected_business_info, model, existing_interpretations):
+def visualize_pelanggan(df, selected_business_info, model):
     df = convert_to_date(df, ['Tanggal'])
     charts = []
 
@@ -104,11 +100,10 @@ def visualize_pelanggan(df, selected_business_info, model, existing_interpretati
                                       values='Jumlah')
             })
 
-    interpretation = interpret_chart('Pelanggan', charts, model, existing_interpretations)
+    interpretation = interpret_chart('Pelanggan', charts, model)
     return charts, interpretation
 
-# Fungsi visualisasi lainnya tetap sama, tambahkan parameter `existing_interpretations` dan panggil `interpret_chart` dengan parameter tersebut
-def visualize_produk(df, selected_business_info, model, existing_interpretations):
+def visualize_produk(df, selected_business_info, model):
     df = convert_to_date(df, ['Tanggal'])
     charts = []
 
@@ -144,10 +139,10 @@ def visualize_produk(df, selected_business_info, model, existing_interpretations
                                   labels={'Tanggal': 'Tanggal', 'Jumlah Terjual': 'Jumlah Terjual', 'Harga Produk': 'Harga Produk'})
             })
 
-    interpretation = interpret_chart('Produk', charts, model, existing_interpretations)
+    interpretation = interpret_chart('Produk', charts, model)
     return charts, interpretation
 
-def visualize_transaksi_penjualan(df, selected_business_info, model, existing_interpretations):
+def visualize_transaksi_penjualan(df, selected_business_info, model):
     df = convert_to_date(df, ['Tanggal'])
     charts = []
 
@@ -185,115 +180,299 @@ def visualize_transaksi_penjualan(df, selected_business_info, model, existing_in
                                  barmode='group')
             })
 
-    interpretation = interpret_chart('Transaksi Penjualan', charts, model, existing_interpretations)
+    interpretation = interpret_chart('Transaksi Penjualan', charts, model)
     return charts, interpretation
 
-def visualize_transaksi_pembelian(df, selected_business_info, model, existing_interpretations):
+def visualize_lokasi_penjualan(df, selected_business_info, model):
     df = convert_to_date(df, ['Tanggal'])
     charts = []
 
-    if selected_business_info == 'Jumlah pembelian, pengeluaran, dan metode pembayaran':
-        if 'Metode Pembayaran' in df.columns and 'Pengeluaran' in df.columns:
-            payment_purchases = df.groupby('Metode Pembayaran')['Pengeluaran'].sum().reset_index()
+    if selected_business_info == 'Kinerja penjualan di berbagai lokasi':
+        if 'Lokasi' in df.columns and 'Pendapatan' in df.columns:
+            location_sales = df.groupby('Lokasi')['Pendapatan'].sum().reset_index()
             charts.append({
-                'type': 'Jumlah pembelian, pengeluaran, dan metode pembayaran',
-                'figure': px.bar(data_frame=payment_purchases, 
-                                 x='Metode Pembayaran', 
-                                 y='Pengeluaran', 
-                                 labels={'Metode Pembayaran': 'Metode Pembayaran', 'Pengeluaran': 'Pengeluaran'})
+                'type': 'Kinerja penjualan di berbagai lokasi',
+                'figure': px.bar(data_frame=location_sales, 
+                                 x='Lokasi', 
+                                 y='Pendapatan', 
+                                 labels={'Lokasi': 'Lokasi', 'Pendapatan': 'Pendapatan'})
             })
 
-    elif selected_business_info == 'Tren pembelian':
-        if 'Tanggal' in df.columns and 'Pengeluaran' in df.columns:
-            daily_purchase_trends = df.groupby('Tanggal')['Pengeluaran'].sum().reset_index()
+    elif selected_business_info == 'Distribusi penjualan berdasarkan kota/provinsi':
+        if 'Kota/Provinsi' in df.columns and 'Pendapatan' in df.columns:
+            city_province_sales = df.groupby('Kota/Provinsi')['Pendapatan'].sum().reset_index()
             charts.append({
-                'type': 'Tren pembelian',
-                'figure': px.line(data_frame=daily_purchase_trends, 
-                                  x='Tanggal', 
-                                  y='Pengeluaran', 
-                                  labels={'Tanggal': 'Tanggal', 'Pengeluaran': 'Pengeluaran'})
+                'type': 'Distribusi penjualan berdasarkan kota/provinsi',
+                'figure': px.pie(data_frame=city_province_sales, 
+                                 names='Kota/Provinsi', 
+                                 values='Pendapatan')
             })
 
-    elif selected_business_info == 'Analisis status pembelian dan metode pembayaran':
-        if 'Status Pembelian' in df.columns and 'Metode Pembayaran' in df.columns:
-            status_payment_purchases = df.groupby(['Status Pembelian', 'Metode Pembayaran']).size().reset_index(name='Jumlah')
+    elif selected_business_info == 'Analisis lokasi dengan penjualan tertinggi/rendah':
+        if 'Lokasi' in df.columns and 'Pendapatan' in df.columns:
+            location_sales = df.groupby('Lokasi')['Pendapatan'].sum().reset_index()
+            top_location_sales = location_sales.sort_values('Pendapatan', ascending=False).head(10)
             charts.append({
-                'type': 'Analisis status pembelian dan metode pembayaran',
-                'figure': px.bar(data_frame=status_payment_purchases, 
-                                 x='Status Pembelian', 
-                                 y='Jumlah', 
-                                 color='Metode Pembayaran', 
-                                 barmode='group')
+                'type': 'Analisis lokasi dengan penjualan tertinggi/rendah',
+                'figure': px.bar(data_frame=top_location_sales, 
+                                 x='Lokasi', 
+                                 y='Pendapatan', 
+                                 labels={'Lokasi': 'Lokasi', 'Pendapatan': 'Pendapatan'})
             })
 
-    interpretation = interpret_chart('Transaksi Pembelian', charts, model, existing_interpretations)
+    interpretation = interpret_chart('Lokasi Penjualan', charts, model)
     return charts, interpretation
 
-def visualize_transaksi_operasional(df, selected_business_info, model, existing_interpretations):
+def visualize_staf_penjualan(df, selected_business_info, model):
     df = convert_to_date(df, ['Tanggal'])
     charts = []
 
-    if selected_business_info == 'Jumlah pengeluaran operasional':
-        if 'Pengeluaran Operasional' in df.columns and 'Jumlah' in df.columns:
-            operational_expenses = df.groupby('Pengeluaran Operasional')['Jumlah'].sum().reset_index()
+    if selected_business_info == 'Kinerja dan komisi staf penjualan':
+        if 'Nama Staf' in df.columns and 'Komisi' in df.columns:
+            staff_commission = df.groupby('Nama Staf')['Komisi'].sum().reset_index()
             charts.append({
-                'type': 'Jumlah pengeluaran operasional',
-                'figure': px.bar(data_frame=operational_expenses, 
-                                 x='Pengeluaran Operasional', 
-                                 y='Jumlah', 
-                                 labels={'Pengeluaran Operasional': 'Pengeluaran Operasional', 'Jumlah': 'Jumlah'})
+                'type': 'Kinerja dan komisi staf penjualan',
+                'figure': px.bar(data_frame=staff_commission, 
+                                 x='Nama Staf', 
+                                 y='Komisi', 
+                                 labels={'Nama Staf': 'Nama Staf', 'Komisi': 'Komisi'})
             })
 
-    elif selected_business_info == 'Tren pengeluaran operasional':
-        if 'Tanggal' in df.columns and 'Jumlah' in df.columns:
-            daily_operational_trends = df.groupby('Tanggal')['Jumlah'].sum().reset_index()
+    elif selected_business_info == 'Analisis penilaian kinerja staf':
+        if 'Nama Staf' in df.columns and 'Penilaian Kinerja' in df.columns:
+            staff_performance = df.groupby('Nama Staf')['Penilaian Kinerja'].mean().reset_index()
             charts.append({
-                'type': 'Tren pengeluaran operasional',
-                'figure': px.line(data_frame=daily_operational_trends, 
+                'type': 'Analisis penilaian kinerja staf',
+                'figure': px.bar(data_frame=staff_performance, 
+                                 x='Nama Staf', 
+                                 y='Penilaian Kinerja', 
+                                 labels={'Nama Staf': 'Nama Staf', 'Penilaian Kinerja': 'Penilaian Kinerja'})
+            })
+
+    elif selected_business_info == 'Distribusi staf berdasarkan posisi/jabatan':
+        if 'Posisi/Jabatan' in df.columns:
+            position_counts = df['Posisi/Jabatan'].value_counts().reset_index()
+            position_counts.columns = ['Posisi/Jabatan', 'Jumlah']
+            charts.append({
+                'type': 'Distribusi staf berdasarkan posisi/jabatan',
+                'figure': px.pie(data_frame=position_counts, 
+                                 names='Posisi/Jabatan', 
+                                 values='Jumlah')
+            })
+
+    interpretation = interpret_chart('Staf Penjualan', charts, model)
+    return charts, interpretation
+
+def visualize_inventaris(df, selected_business_info, model):
+    df = convert_to_date(df, ['Tanggal'])
+    charts = []
+
+    if selected_business_info == 'Manajemen stok produk':
+        if 'Produk' in df.columns and 'Stok' in df.columns:
+            product_stock = df.groupby('Produk')['Stok'].sum().reset_index()
+            charts.append({
+                'type': 'Manajemen stok produk',
+                'figure': px.bar(data_frame=product_stock, 
+                                 x='Produk', 
+                                 y='Stok', 
+                                 labels={'Produk': 'Produk', 'Stok': 'Stok'})
+            })
+
+    elif selected_business_info == 'Tren stok masuk dan keluar':
+        if 'Tanggal' in df.columns and 'Stok Masuk' in df.columns and 'Stok Keluar' in df.columns:
+            stock_trends = df.groupby('Tanggal').agg({'Stok Masuk': 'sum', 'Stok Keluar': 'sum'}).reset_index()
+            stock_trends = stock_trends.melt(id_vars='Tanggal', value_vars=['Stok Masuk', 'Stok Keluar'], var_name='Tipe', value_name='Jumlah')
+            charts.append({
+                'type': 'Tren stok masuk dan keluar',
+                'figure': px.line(data_frame=stock_trends, 
                                   x='Tanggal', 
                                   y='Jumlah', 
-                                  labels={'Tanggal': 'Tanggal', 'Jumlah': 'Jumlah'})
+                                  color='Tipe', 
+                                  labels={'Tanggal': 'Tanggal', 'Jumlah': 'Jumlah', 'Tipe': 'Tipe'})
             })
 
-    interpretation = interpret_chart('Transaksi Operasional', charts, model, existing_interpretations)
+    elif selected_business_info == 'Analisis produk dengan stok terbanyak/terkecil':
+        if 'Produk' in df.columns and 'Stok' in df.columns:
+            top_stock_products = df.groupby('Produk')['Stok'].sum().reset_index().sort_values('Stok', ascending=False).head(10)
+            charts.append({
+                'type': 'Analisis produk dengan stok terbanyak/terkecil',
+                'figure': px.bar(data_frame=top_stock_products, 
+                                 x='Produk', 
+                                 y='Stok', 
+                                 labels={'Produk': 'Produk', 'Stok': 'Stok'})
+            })
+
+    interpretation = interpret_chart('Inventaris', charts, model)
     return charts, interpretation
 
-def visualize_karyawan(df, selected_business_info, model, existing_interpretations):
+def visualize_promosi_pemasaran(df, selected_business_info, model):
     df = convert_to_date(df, ['Tanggal'])
     charts = []
 
-    if selected_business_info == 'Analisis kinerja karyawan berdasarkan penjualan':
-        if 'Karyawan' in df.columns and 'Jumlah Penjualan' in df.columns:
-            employee_sales = df.groupby('Karyawan')['Jumlah Penjualan'].sum().reset_index()
+    if selected_business_info == 'Efektivitas kampanye promosi':
+        if 'Kampanye Promosi' in df.columns and 'Pendapatan' in df.columns:
+            campaign_sales = df.groupby('Kampanye Promosi')['Pendapatan'].sum().reset_index()
             charts.append({
-                'type': 'Analisis kinerja karyawan berdasarkan penjualan',
-                'figure': px.bar(data_frame=employee_sales, 
-                                 x='Karyawan', 
-                                 y='Jumlah Penjualan', 
-                                 labels={'Karyawan': 'Karyawan', 'Jumlah Penjualan': 'Jumlah Penjualan'})
+                'type': 'Efektivitas kampanye promosi',
+                'figure': px.bar(data_frame=campaign_sales, 
+                                 x='Kampanye Promosi', 
+                                 y='Pendapatan', 
+                                 labels={'Kampanye Promosi': 'Kampanye Promosi', 'Pendapatan': 'Pendapatan'})
             })
 
-    elif selected_business_info == 'Analisis absensi karyawan':
-        if 'Karyawan' in df.columns and 'Jumlah Hari Hadir' in df.columns:
-            employee_attendance = df.groupby('Karyawan')['Jumlah Hari Hadir'].sum().reset_index()
+    elif selected_business_info == 'Distribusi penjualan berdasarkan media promosi':
+        if 'Media Promosi' in df.columns and 'Pendapatan' in df.columns:
+            media_sales = df.groupby('Media Promosi')['Pendapatan'].sum().reset_index()
             charts.append({
-                'type': 'Analisis absensi karyawan',
-                'figure': px.bar(data_frame=employee_attendance, 
-                                 x='Karyawan', 
-                                 y='Jumlah Hari Hadir', 
-                                 labels={'Karyawan': 'Karyawan', 'Jumlah Hari Hadir': 'Jumlah Hari Hadir'})
+                'type': 'Distribusi penjualan berdasarkan media promosi',
+                'figure': px.pie(data_frame=media_sales, 
+                                 names='Media Promosi', 
+                                 values='Pendapatan')
             })
 
-    elif selected_business_info == 'Analisis produktivitas karyawan':
-        if 'Karyawan' in df.columns and 'Jumlah Penjualan' in df.columns and 'Jumlah Hari Hadir' in df.columns:
-            employee_productivity = df.groupby('Karyawan').apply(lambda x: x['Jumlah Penjualan'].sum() / x['Jumlah Hari Hadir'].sum()).reset_index(name='Produktivitas')
+    elif selected_business_info == 'Analisis kode diskon promosi':
+        if 'Kode Diskon' in df.columns and 'Pendapatan' in df.columns:
+            discount_code_sales = df.groupby('Kode Diskon')['Pendapatan'].sum().reset_index()
             charts.append({
-                'type': 'Analisis produktivitas karyawan',
-                'figure': px.bar(data_frame=employee_productivity, 
-                                 x='Karyawan', 
-                                 y='Produktivitas', 
-                                 labels={'Karyawan': 'Karyawan', 'Produktivitas': 'Produktivitas'})
+                'type': 'Analisis kode diskon promosi',
+                'figure': px.bar(data_frame=discount_code_sales, 
+                                 x='Kode Diskon', 
+                                 y='Pendapatan', 
+                                 labels={'Kode Diskon': 'Kode Diskon', 'Pendapatan': 'Pendapatan'})
             })
 
-    interpretation = interpret_chart('Karyawan', charts, model, existing_interpretations)
+    interpretation = interpret_chart('Promosi dan Pemasaran', charts, model)
+    return charts, interpretation
+
+def visualize_feedback_pengembalian(df, selected_business_info, model):
+    df = convert_to_date(df, ['Tanggal'])
+    charts = []
+
+    if selected_business_info == 'Masalah dan kepuasan pelanggan':
+        if 'Masalah Pelanggan' in df.columns:
+            issue_counts = df['Masalah Pelanggan'].value_counts().reset_index()
+            issue_counts.columns = ['Masalah Pelanggan', 'Jumlah']
+            charts.append({
+                'type': 'Masalah dan kepuasan pelanggan',
+                'figure': px.bar(data_frame=issue_counts, 
+                                 x='Masalah Pelanggan', 
+                                 y='Jumlah', 
+                                 labels={'Masalah Pelanggan': 'Masalah Pelanggan', 'Jumlah': 'Jumlah'})
+            })
+
+    elif selected_business_info == 'Distribusi alasan pengembalian produk':
+        if 'Alasan Pengembalian' in df.columns:
+            return_reason_counts = df['Alasan Pengembalian'].value_counts().reset_index()
+            return_reason_counts.columns = ['Alasan Pengembalian', 'Jumlah']
+            charts.append({
+                'type': 'Distribusi alasan pengembalian produk',
+                'figure': px.pie(data_frame=return_reason_counts, 
+                                 names='Alasan Pengembalian', 
+                                 values='Jumlah')
+            })
+
+    elif selected_business_info == 'Status pengembalian produk':
+        if 'Status Pengembalian' in df.columns:
+            return_status_counts = df['Status Pengembalian'].value_counts().reset_index()
+            return_status_counts.columns = ['Status Pengembalian', 'Jumlah']
+            charts.append({
+                'type': 'Status pengembalian produk',
+                'figure': px.bar(data_frame=return_status_counts, 
+                                 x='Status Pengembalian', 
+                                 y='Jumlah', 
+                                 labels={'Status Pengembalian': 'Status Pengembalian', 'Jumlah': 'Jumlah'})
+            })
+
+    interpretation = interpret_chart('Feedback dan Pengembalian', charts, model)
+    return charts, interpretation
+
+def visualize_analisis_penjualan(df, selected_business_info, model):
+    df = convert_to_date(df, ['Tanggal'])
+    charts = []
+
+    if selected_business_info == 'Penjualan agregat dan tren':
+        if 'Tanggal' in df.columns and 'Pendapatan' in df.columns:
+            sales_trends = df.groupby('Tanggal')['Pendapatan'].sum().reset_index()
+            charts.append({
+                'type': 'Penjualan agregat dan tren',
+                'figure': px.line(data_frame=sales_trends, 
+                                  x='Tanggal', 
+                                  y='Pendapatan', 
+                                  labels={'Tanggal': 'Tanggal', 'Pendapatan': 'Pendapatan'})
+            })
+
+    elif selected_business_info == 'Analisis penjualan berdasarkan produk/kategori':
+        if 'Produk' in df.columns and 'Pendapatan' in df.columns:
+            product_sales = df.groupby('Produk')['Pendapatan'].sum().reset_index()
+            charts.append({
+                'type': 'Analisis penjualan berdasarkan produk/kategori',
+                'figure': px.bar(data_frame=product_sales, 
+                                 x='Produk', 
+                                 y='Pendapatan', 
+                                 labels={'Produk': 'Produk', 'Pendapatan': 'Pendapatan'})
+            })
+
+    elif selected_business_info == 'Tren penjualan/tahunan':
+        if 'Tanggal' in df.columns and 'Pendapatan' in df.columns:
+            df['Bulan'] = df['Tanggal'].dt.to_period('M')
+            df['Tahun'] = df['Tanggal'].dt.year
+            monthly_trends = df.groupby('Bulan')['Pendapatan'].sum().reset_index()
+            yearly_trends = df.groupby('Tahun')['Pendapatan'].sum().reset_index()
+            charts.append({
+                'type': 'Tren penjualan/tahunan',
+                'figure': px.line(data_frame=monthly_trends, 
+                                  x='Bulan', 
+                                  y='Pendapatan', 
+                                  labels={'Bulan': 'Bulan', 'Pendapatan': 'Pendapatan'})
+            })
+            charts.append({
+                'type': 'Tren penjualan/tahunan',
+                'figure': px.line(data_frame=yearly_trends, 
+                                  x='Tahun', 
+                                  y='Pendapatan', 
+                                  labels={'Tahun': 'Tahun', 'Pendapatan': 'Pendapatan'})
+            })
+
+    interpretation = interpret_chart('Analisis Penjualan', charts, model)
+    return charts, interpretation
+
+def visualize_lainnya(df, selected_business_info, model):
+    df = convert_to_date(df, ['Tanggal'])
+    charts = []
+
+    if selected_business_info == 'Analisis tambahan dan faktor eksternal':
+        if 'Faktor Eksternal' in df.columns and 'Pendapatan' in df.columns:
+            external_factor_sales = df.groupby('Faktor Eksternal')['Pendapatan'].sum().reset_index()
+            charts.append({
+                'type': 'Analisis tambahan dan faktor eksternal',
+                'figure': px.bar(data_frame=external_factor_sales, 
+                                 x='Faktor Eksternal', 
+                                 y='Pendapatan', 
+                                 labels={'Faktor Eksternal': 'Faktor Eksternal', 'Pendapatan': 'Pendapatan'})
+            })
+
+    elif selected_business_info == 'Tren penjualan berdasarkan faktor ekonomi':
+        if 'Tanggal' in df.columns and 'Faktor Ekonomi' in df.columns and 'Pendapatan' in df.columns:
+            economic_factor_trends = df.groupby(['Tanggal', 'Faktor Ekonomi'])['Pendapatan'].sum().reset_index()
+            charts.append({
+                'type': 'Tren penjualan berdasarkan faktor ekonomi',
+                'figure': px.line(data_frame=economic_factor_trends, 
+                                  x='Tanggal', 
+                                  y='Pendapatan', 
+                                  color='Faktor Ekonomi', 
+                                  labels={'Tanggal': 'Tanggal', 'Pendapatan': 'Pendapatan', 'Faktor Ekonomi': 'Faktor Ekonomi'})
+            })
+
+    elif selected_business_info == 'Analisis faktor lingkungan dan penjualan':
+        if 'Faktor Lingkungan' in df.columns and 'Pendapatan' in df.columns:
+            environmental_factor_sales = df.groupby('Faktor Lingkungan')['Pendapatan'].sum().reset_index()
+            charts.append({
+                'type': 'Analisis faktor lingkungan dan penjualan',
+                'figure': px.bar(data_frame=environmental_factor_sales, 
+                                 x='Faktor Lingkungan', 
+                                 y='Pendapatan', 
+                                 labels={'Faktor Lingkungan': 'Faktor Lingkungan', 'Pendapatan': 'Pendapatan'})
+            })
+
+    interpretation = interpret_chart('Lainnya', charts, model)
     return charts, interpretation
