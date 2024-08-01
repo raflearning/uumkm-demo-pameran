@@ -149,13 +149,15 @@ if data is not None and selected_sheet:
                     return [], ""
 
             # Get visualization and interpretation
-            try:
-                charts, interpretation = get_visualization_and_interpretation(sheet_data, selected_business_info, selected_sheet, model)
-                st.session_state.charts = charts
-                st.session_state.interpretation_text = interpretation
-            except InternalServerError as e:
-                st.error("Terjadi kesalahan pada server saat mencoba mendapatkan interpretasi. Silakan coba lagi nanti.")
-                st.stop()
+            if st.session_state.visualization_results is None:
+                try:
+                    charts, interpretation = get_visualization_and_interpretation(sheet_data, selected_business_info, selected_sheet, model)
+                    st.session_state.charts = charts
+                    st.session_state.interpretation_text = interpretation
+                    st.session_state.visualization_results = (charts, interpretation)
+                except InternalServerError as e:
+                    st.error("Terjadi kesalahan pada server saat mencoba mendapatkan interpretasi. Silakan coba lagi nanti.")
+                    st.stop()
 
             # Function to display charts one by one
             def display_charts(charts):
@@ -167,7 +169,7 @@ if data is not None and selected_sheet:
                         st.write(f"### Error: Could not display Plotly figure. Error: {e}")
 
             # Display charts
-            display_charts(charts)
+            display_charts(st.session_state.charts)
 
             # Function to display interpretation one character at a time
             def display_interpretation_one_by_one(interpretation):
@@ -182,7 +184,7 @@ if data is not None and selected_sheet:
                 return ""
 
             # Display interpretation
-            st.session_state.interpretation_text = display_interpretation_one_by_one(interpretation)
+            st.session_state.interpretation_text = display_interpretation_one_by_one(st.session_state.interpretation_text)
             st.markdown("---")
 
 # Chatbot Section
