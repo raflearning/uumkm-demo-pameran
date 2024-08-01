@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import time
-import google.generativeai as genai
+from google.generativeai import genai
 from google.api_core.exceptions import InternalServerError
 from dotenv import load_dotenv
 from vis_interpret import (
