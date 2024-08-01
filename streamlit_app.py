@@ -148,16 +148,17 @@ if data is not None and selected_sheet:
                 st.stop()
 
             # Function to display charts one by one
-            def display_charts(charts):
+            def display_charts_one_by_one(charts):
                 for chart in charts:
                     figure = chart.get('figure')
                     try:
                         st.plotly_chart(figure)
+                        time.sleep(1)  # Jeda antar chart
                     except Exception as e:
                         st.write(f"### Error: Could not display Plotly figure. Error: {e}")
 
             # Display charts
-            display_charts(charts)
+            display_charts_one_by_one(charts)
 
             # Function to display interpretation one character at a time
             def display_interpretation_one_by_one(interpretation):
@@ -167,43 +168,34 @@ if data is not None and selected_sheet:
                     for i in range(len(interpretation)):
                         interpretation_text += interpretation[i]
                         interpretation_box.markdown(interpretation_text)
-                        time.sleep(0.004)  # Adjust the speed of typing effect
+                        time.sleep(0.005)  # Adjust the speed of typing effect
                     return interpretation_text
                 return ""
 
             # Display interpretation
             interpretation_text = display_interpretation_one_by_one(interpretation)
-            st.markdown("---")
 
             # Create a container for the chatbot section that appears after interpretation
-            def chatbot(charts, interpretation_text, model):
-                if interpretation_text:
-                    st.write("### 💬Chatbot AI")
-                    st.write("Kamu masih punya pertanyaan terkait hasil visualisasinya? Tanyakan di bawah ya!")
+            if interpretation_text:
+                st.markdown("---")
+                st.write("### 💬Chatbot AI")
+                st.write("Kamu masih punya pertanyaan terkait hasil visualisasinya? Tanyakan di bawah ya!")
 
-                    # Input box for user questions
-                    user_question = st.text_input("Ajukan pertanyaan kamu di sini...")
+                # Input box for user questions
+                user_question = st.text_input("Ajukan pertanyaan kamu di sini...")
 
-                    if user_question:
-                        try:
-                            response = model.generate_content(
-                                f"Pertanyaan: {user_question}\n"
-                                f"Chart yang telah divisualkan: {charts}\n"
-                                f"Hasil interpretasi: {interpretation_text}\n"
-                                "Jawab dalam konteks bisnis."
-                            )
-                            chatbot_response = response.text
+                if user_question:
+                    try:
+                        response = model.generate_content(f"Pertanyaan: {user_question}\nData: {interpretation_text}")
+                        chatbot_response = response.text
 
-                            # Display the response as typing effect
-                            st.write("#### Jawaban Chatbot:")
-                            typing_response = ""
-                            typing_box = st.empty()
-                            for i in range(len(chatbot_response)):
-                                typing_response += chatbot_response[i]
-                                typing_box.markdown(typing_response)
-                                time.sleep(0.004)  # Adjust the speed of typing effect
-                        except Exception as e:
-                            st.write(f"### Error: {e}")
-
-            # Display chatbot
-            chatbot(charts, interpretation_text, model)
+                        # Display the response as typing effect
+                        st.write("#### Jawaban Chatbot:")
+                        typing_response = ""
+                        typing_box = st.empty()
+                        for i in range(len(chatbot_response)):
+                            typing_response += chatbot_response[i]
+                            typing_box.markdown(typing_response)
+                            time.sleep(0.005)  # Adjust the speed of typing effect
+                    except Exception as e:
+                        st.write(f"### Error: {e}")
