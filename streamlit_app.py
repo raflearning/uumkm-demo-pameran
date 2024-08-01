@@ -179,38 +179,7 @@ if data is not None and selected_sheet:
                     return interpretation_text
                 return ""
 
-            st.markdown(display_interpretation_one_by_one(st.session_state.interpretation_text))
+            # Display interpretation only once
+            if st.session_state.interpretation_text:
+                st.markdown(display_interpretation_one_by_one(st.session_state.interpretation_text))
             st.markdown("---")
-
-# Chatbot Section
-def chatbot(model):
-    st.write("### 💬Chatbot AI")
-    st.write("Kamu masih punya pertanyaan terkait hasil visualisasinya? Tanyakan di bawah ya!")
-
-    # Input box for user questions
-    user_question = st.text_input("Ajukan pertanyaan kamu di sini...")
-
-    if user_question:
-        try:
-            response = model.generate_content(
-                f"Pertanyaan: {user_question}\n"
-                f"Chart yang telah divisualkan: {st.session_state.charts}\n"
-                f"Hasil interpretasi: {st.session_state.interpretation_text}\n"
-                "Jawab dalam konteks bisnis."
-            )
-            chatbot_response = response.text
-
-            # Display the response as typing effect
-            st.write("#### Jawaban Chatbot:")
-            typing_response = ""
-            typing_box = st.empty()
-            for i in range(len(chatbot_response)):
-                typing_response += chatbot_response[i]
-                typing_box.markdown(typing_response)
-                time.sleep(0.004)  # Adjust the speed of typing effect
-        except Exception as e:
-            st.write(f"### Error: {e}")
-
-# Display chatbot only if interpretation is done
-if st.session_state.interpretation_text is not None:
-    chatbot(model)
